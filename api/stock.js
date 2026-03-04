@@ -28,7 +28,6 @@ module.exports = async function handler(req, res) {
   const API_KEY = 'OWWSOT0K004I5E9C';
 
   try {
-    // Quote
     const quoteData = await httpsGet(
       `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`
     );
@@ -41,7 +40,6 @@ module.exports = async function handler(req, res) {
 
     await sleep(1200);
 
-    // Overview (shares outstanding)
     const overviewData = await httpsGet(
       `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}&apikey=${API_KEY}`
     );
@@ -49,7 +47,6 @@ module.exports = async function handler(req, res) {
 
     await sleep(1200);
 
-    // Balance sheet
     const balanceSheetData = await httpsGet(
       `https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol=${symbol}&apikey=${API_KEY}`
     );
@@ -57,39 +54,19 @@ module.exports = async function handler(req, res) {
     const annualReports = balanceSheetData.annualReports;
     const balanceSheet = (annualReports && annualReports.length > 0) ? annualReports[0] : null;
 
-    // If still no balance sheet, return raw response for debugging
-    if (!balanceSheet) {
-      res.status(200).json({
-        currentPrice,
-        sharesOutstanding,
-        balanceSheet: null,
-        debug: {
-          rawBsKeys: Object.keys(balanceSheetData),
-          rawBsNote: balanceSheetData['Note'] || balanceSheetData['Information'] || balanceSheetData['message'] || 'No note',
-          rawBsSample: JSON.stringify(balanceSheetData).slice(0, 300)
-        }
-      });
+    if (!balanceSheet || sharesOutstanding === 0) {
+      res.status(200).json({ currentPrice, sharesOutstanding, balanceSheet: null, zakatablePerShare: 0 });
       return;
     }
 
-    // Zakatable fields
     const cash = parseFloat(balanceSheet.cashAndCashEquivalentsAtCarryingValue) || 0;
     const shortTermInv = parseFloat(balanceSheet.shortTermInvestments) || 0;
     const receivables = parseFloat(balanceSheet.currentNetReceivables) || 0;
     const inventory = parseFloat(balanceSheet.inventory) || 0;
     const totalZakatableAssets = cash + shortTermInv + receivables + inventory;
-    const zakatablePerShare = sharesOutstanding > 0 ? totalZakatableAssets / sharesOutstanding : 0;
+    const zakatablePerShare = totalZakatableAssets / sharesOutstanding;
 
-    res.status(200).json({
-      currentPrice,
-      sharesOutstanding,
-      balanceSheet,
-      zakatablePerShare,
-      totalZakatableAssets,
-      debug: {
-        cash, shortTermInv, receivables, inventory
-      }
-    });
+    res.status(200).json({ currentPrice, sharesOutstanding, zakatablePerShare, totalZakatableAssets });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
