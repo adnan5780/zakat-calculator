@@ -645,8 +645,7 @@ can also be entered here.</span>
       }
 
       const currentPrice = proxyData.currentPrice;
-      const balanceSheet = proxyData.balanceSheet;
-      const sharesOutstanding = proxyData.sharesOutstanding;
+      const zakatablePerShare = proxyData.zakatablePerShare;
 
       if (!currentPrice || currentPrice === 0) {
         showTickerError(id, `Could not find data for "${symbol}". Check the ticker and try again.`);
@@ -656,18 +655,10 @@ can also be entered here.</span>
       const positionValue = shares * currentPrice;
       let zakatableValue, method, zakatablePct;
 
-      if (balanceSheet && sharesOutstanding > 0) {
-        // Zakatable assets: cash + short-term investments + receivables + inventory
-        const cash = parseFloat(balanceSheet.cashAndCashEquivalentsAtCarryingValue) || 0;
-        const shortTermInv = parseFloat(balanceSheet.shortTermInvestments) || 0;
-        const receivables = parseFloat(balanceSheet.currentNetReceivables) || 0;
-        const inventory = parseFloat(balanceSheet.inventory) || 0;
-        const totalZakatableAssets = cash + shortTermInv + receivables + inventory;
-        const zakatablePerShare = totalZakatableAssets / sharesOutstanding;
+      if (zakatablePerShare > 0) {
         zakatableValue = zakatablePerShare * shares;
         zakatablePct = ((zakatableValue / positionValue) * 100).toFixed(1);
         method = 'balance-sheet';
-
         resultEl.innerHTML = `
           <div>Ticker: <span class="highlight">${symbol}</span> &nbsp;|&nbsp; ${shares} shares @ ${fmt(currentPrice)}</div>
           <div>Position value: <span class="highlight">${fmt(positionValue)}</span></div>
@@ -676,7 +667,6 @@ can also be entered here.</span>
           <div style="font-size:0.7rem; color:rgba(212,180,99,0.35); margin-top:2px;">Based on latest annual balance sheet</div>
         `;
       } else {
-        // Fallback to 30%
         zakatableValue = positionValue * 0.30;
         method = 'fallback-30pct';
         resultEl.innerHTML = `
