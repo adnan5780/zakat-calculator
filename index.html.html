@@ -507,28 +507,28 @@ Per Fiqh Council of North America.</span>
     <!-- Method toggle -->
     <div style="margin-bottom:14px;">
       <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:8px; line-height:1.6;">
-        Choose based on your <strong style="color:rgba(212,180,99,0.7);">intent</strong> — do you plan to hold this until retirement, or liquidate it soon?
+        <strong style="color:rgba(212,180,99,0.7);">Method 2 is recommended for most people.</strong> Use Method 1 for more advanced purposes only if your specific fund's balance sheet data is publicly available (e.g. a broad ETF like VOO).
       </div>
       <div style="display:flex; gap:10px;">
-        <button id="btn401m1" onclick="set401kMethod(1)" style="
+        <button id="btn401m2" onclick="set401kMethod(2)" style="
           flex:1; padding:10px 6px; border-radius:10px;
           border:1px solid #d4b463; background:rgba(212,180,99,0.15);
           color:#d4b463; cursor:pointer; transition:all 0.2s;
           font-family:'Cormorant Garamond',serif; font-size:0.88rem; line-height:1.4;">
-          🌱 Method 1<br/><span style="font-size:0.75rem; opacity:0.7;">Long-Term Hold</span>
+          ⚡ Method 2<br/><span style="font-size:0.75rem; opacity:0.7;">Standard (Recommended)</span>
         </button>
-        <button id="btn401m2" onclick="set401kMethod(2)" style="
+        <button id="btn401m1" onclick="set401kMethod(1)" style="
           flex:1; padding:10px 6px; border-radius:10px;
           border:1px solid rgba(212,180,99,0.2); background:transparent;
           color:rgba(240,230,200,0.4); cursor:pointer; transition:all 0.2s;
           font-family:'Cormorant Garamond',serif; font-size:0.88rem; line-height:1.4;">
-          ⚡ Method 2<br/><span style="font-size:0.75rem; opacity:0.7;">Short-Term / Liquid</span>
+          🌱 Method 1<br/><span style="font-size:0.75rem; opacity:0.7;">Advanced / Fund Data</span>
         </button>
       </div>
     </div>
 
     <!-- Method 1 -->
-    <div id="method1Section">
+    <div id="method1Section" style="display:none;">
       <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:8px; line-height:1.6;">
         Enter each fund in your 401(k) with its ticker and your balance in that fund.
         Zakat is based on the fund's actual zakatable assets — <strong style="color:rgba(212,180,99,0.7);">no penalty or tax deduction.</strong>
@@ -554,7 +554,7 @@ Per Fiqh Council of North America.</span>
     </div>
 
     <!-- Method 2 -->
-    <div id="method2Section" style="display:none;">
+    <div id="method2Section">
       <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.6;">
         Zakat calculated on what you'd receive if you withdrew today — after the 10% early withdrawal penalty and income taxes.
       </div>
@@ -687,7 +687,7 @@ can also be entered here.</span>
   let tickerData = {}; // { id: { symbol, shares, zakatableValue, method } }
   let fund401kCount = 0;
   let fund401kData = {}; // { id: { symbol, balance, zakatableValue } }
-  let current401kMethod = 1;
+  let current401kMethod = 2;
 
   const fmt = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(val || 0);
 
