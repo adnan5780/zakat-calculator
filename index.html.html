@@ -487,39 +487,96 @@ Falls back to 30% if unavailable.</span>
   <div class="card">
     <div class="card-header">
       <span class="card-icon">🏛️</span>
-      <span class="card-title">401(k) Retirement</span>
+      <span class="card-title">401(k) / IRA Retirement</span>
       <div class="tooltip-wrap">
         <span class="tooltip-icon">i</span>
-        <span class="tooltip-box">Formula:
-(Balance − 10% penalty − taxes)
-× 2.5%
+        <span class="tooltip-box">Method 1 (Long-Term):
+Zakat on zakatable assets
+inside your fund — no penalty
+or tax deduction.
 
-Zakat calculated on what
-you'd actually receive
-if withdrawn today.</span>
+Method 2 (Short-Term):
+Zakat on what you'd actually
+receive if withdrawn today
+(balance − penalty − taxes).
+
+Per Fiqh Council of North America.</span>
       </div>
     </div>
-    <div class="input-row">
-      <div><div class="input-label">401(k) balance</div></div>
-      <div class="input-right">
-        <span class="input-prefix">$</span>
-        <input type="number" id="balance401k" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+
+    <!-- Method toggle -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:8px; line-height:1.6;">
+        Choose based on your <strong style="color:rgba(212,180,99,0.7);">intent</strong> — do you plan to hold this until retirement, or liquidate it soon?
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button id="btn401m1" onclick="set401kMethod(1)" style="
+          flex:1; padding:10px 6px; border-radius:10px;
+          border:1px solid #d4b463; background:rgba(212,180,99,0.15);
+          color:#d4b463; cursor:pointer; transition:all 0.2s;
+          font-family:'Cormorant Garamond',serif; font-size:0.88rem; line-height:1.4;">
+          🌱 Method 1<br/><span style="font-size:0.75rem; opacity:0.7;">Long-Term Hold</span>
+        </button>
+        <button id="btn401m2" onclick="set401kMethod(2)" style="
+          flex:1; padding:10px 6px; border-radius:10px;
+          border:1px solid rgba(212,180,99,0.2); background:transparent;
+          color:rgba(240,230,200,0.4); cursor:pointer; transition:all 0.2s;
+          font-family:'Cormorant Garamond',serif; font-size:0.88rem; line-height:1.4;">
+          ⚡ Method 2<br/><span style="font-size:0.75rem; opacity:0.7;">Short-Term / Liquid</span>
+        </button>
       </div>
     </div>
-    <div class="input-row">
-      <div>
-        <div class="input-label">Your tax rate</div>
-        <div class="input-sublabel">Enter your bracket (e.g. 22 for 22%)</div>
+
+    <!-- Method 1 -->
+    <div id="method1Section">
+      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.6;">
+        Enter each fund in your 401(k) with its ticker and your balance in that fund.
+        Zakat is based on the fund's actual zakatable assets — <strong style="color:rgba(212,180,99,0.7);">no penalty or tax deduction.</strong>
       </div>
-      <div class="input-right">
-        <span class="input-prefix">%</span>
-        <input type="number" id="taxRate401k" value="22" min="0" max="100" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+      <div id="fund401kList"></div>
+      <button onclick="addFund401k()" style="
+        width:100%; margin-top:6px; padding:9px;
+        background:transparent; border:1px dashed rgba(212,180,99,0.25);
+        border-radius:10px; color:rgba(212,180,99,0.55);
+        font-family:'Cormorant Garamond',serif; font-size:0.9rem;
+        cursor:pointer; transition:all 0.2s;"
+        onmouseover="this.style.borderColor='rgba(212,180,99,0.6)';this.style.color='#d4b463'"
+        onmouseout="this.style.borderColor='rgba(212,180,99,0.25)';this.style.color='rgba(212,180,99,0.55)'">
+        + Add Fund / ETF
+      </button>
+      <div id="fund401kTotal" style="display:none; margin-top:12px; padding:10px 14px;
+        background:rgba(212,180,99,0.05); border-radius:10px;
+        font-size:0.78rem; color:rgba(212,180,99,0.55); line-height:1.9;">
       </div>
     </div>
-    <div class="breakdown-box" id="breakdownBox">
-      <span id="penaltyLine"></span><br/>
-      <span id="taxLine"></span><br/>
-      <span class="breakdown-net" id="netLine"></span>
+
+    <!-- Method 2 -->
+    <div id="method2Section" style="display:none;">
+      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.6;">
+        Zakat calculated on what you'd receive if you withdrew today — after the 10% early withdrawal penalty and income taxes.
+      </div>
+      <div class="input-row">
+        <div><div class="input-label">401(k) balance</div></div>
+        <div class="input-right">
+          <span class="input-prefix">$</span>
+          <input type="number" id="balance401k" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+        </div>
+      </div>
+      <div class="input-row">
+        <div>
+          <div class="input-label">Your tax rate</div>
+          <div class="input-sublabel">e.g. 22 for 22% bracket</div>
+        </div>
+        <div class="input-right">
+          <span class="input-prefix">%</span>
+          <input type="number" id="taxRate401k" value="22" min="0" max="100" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+        </div>
+      </div>
+      <div class="breakdown-box" id="breakdownBox">
+        <span id="penaltyLine"></span><br/>
+        <span id="taxLine"></span><br/>
+        <span class="breakdown-net" id="netLine"></span>
+      </div>
     </div>
   </div>
 
@@ -625,6 +682,9 @@ can also be entered here.</span>
   let nisabType = 'gold';
   let tickerCount = 0;
   let tickerData = {}; // { id: { symbol, shares, zakatableValue, method } }
+  let fund401kCount = 0;
+  let fund401kData = {}; // { id: { symbol, balance, zakatableValue } }
+  let current401kMethod = 1;
 
   const fmt = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(val || 0);
 
@@ -795,19 +855,21 @@ can also be entered here.</span>
   }
 
   function calculate() {
-    const balance401k = val('balance401k');
-    const taxRate = val('taxRate401k');
-    const penalty = balance401k * EARLY_WITHDRAWAL_PENALTY;
-    const taxDed = balance401k * (taxRate / 100);
-    const net401k = Math.max(0, balance401k - penalty - taxDed);
-    const breakdown = document.getElementById('breakdownBox');
-    if (balance401k > 0) {
-      breakdown.style.display = 'block';
-      document.getElementById('penaltyLine').textContent = `Early withdrawal penalty (10%): −${fmt(penalty)}`;
-      document.getElementById('taxLine').textContent = `Estimated taxes (${taxRate}%): −${fmt(taxDed)}`;
-      document.getElementById('netLine').textContent = `Net zakatable amount: ${fmt(net401k)}`;
-    } else {
-      breakdown.style.display = 'none';
+    if (current401kMethod === 2) {
+      const balance401k = val('balance401k');
+      const taxRate = val('taxRate401k');
+      const penalty = balance401k * EARLY_WITHDRAWAL_PENALTY;
+      const taxDed = balance401k * (taxRate / 100);
+      const net401k = Math.max(0, balance401k - penalty - taxDed);
+      const breakdown = document.getElementById('breakdownBox');
+      if (balance401k > 0) {
+        breakdown.style.display = 'block';
+        document.getElementById('penaltyLine').textContent = `Early withdrawal penalty (10%): −${fmt(penalty)}`;
+        document.getElementById('taxLine').textContent = `Estimated taxes (${taxRate}%): −${fmt(taxDed)}`;
+        document.getElementById('netLine').textContent = `Net zakatable amount: ${fmt(net401k)}`;
+      } else {
+        breakdown.style.display = 'none';
+      }
     }
   }
 
@@ -820,16 +882,12 @@ can also be entered here.</span>
     const silverPrice = val('silverPrice');
     const cash = val('cash');
     const tradingStocks = val('tradingStocks');
-    const balance401k = val('balance401k');
-    const taxRate = val('taxRate401k');
     const businessAssets = val('businessAssets');
     const receivables = val('receivables');
     const liabilities = val('liabilities');
 
-    const penalty = balance401k * EARLY_WITHDRAWAL_PENALTY;
-    const taxDed = balance401k * (taxRate / 100);
-    const net401k = Math.max(0, balance401k - penalty - taxDed);
     const longTermZakatable = getLongTermZakatableTotal();
+    const retirement401kZakatable = get401kZakatable();
 
     // Per-category zakatable amounts
     const goldZakatable = goldGrams * goldPrice;
@@ -837,7 +895,6 @@ can also be entered here.</span>
     const cashZakatable = cash;
     const tradingZakatable = tradingStocks;
     const longTermZakatableAmt = longTermZakatable;
-    const retirement401kZakatable = net401k;
     const businessZakatable = businessAssets;
     const receivablesZakatable = receivables;
 
@@ -909,6 +966,148 @@ can also be entered here.</span>
     }
 
     box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function set401kMethod(method) {
+    current401kMethod = method;
+    const m1 = document.getElementById('method1Section');
+    const m2 = document.getElementById('method2Section');
+    const btn1 = document.getElementById('btn401m1');
+    const btn2 = document.getElementById('btn401m2');
+    if (method === 1) {
+      m1.style.display = 'block'; m2.style.display = 'none';
+      btn1.style.border = '1px solid #d4b463'; btn1.style.background = 'rgba(212,180,99,0.15)'; btn1.style.color = '#d4b463';
+      btn2.style.border = '1px solid rgba(212,180,99,0.2)'; btn2.style.background = 'transparent'; btn2.style.color = 'rgba(240,230,200,0.4)';
+    } else {
+      m1.style.display = 'none'; m2.style.display = 'block';
+      btn2.style.border = '1px solid #d4b463'; btn2.style.background = 'rgba(212,180,99,0.15)'; btn2.style.color = '#d4b463';
+      btn1.style.border = '1px solid rgba(212,180,99,0.2)'; btn1.style.background = 'transparent'; btn1.style.color = 'rgba(240,230,200,0.4)';
+    }
+    calculate();
+  }
+
+  function addFund401k() {
+    fund401kCount++;
+    const id = fund401kCount;
+    fund401kData[id] = { symbol: '', balance: 0, zakatableValue: 0 };
+
+    const div = document.createElement('div');
+    div.className = 'ticker-row';
+    div.id = `fund401k-${id}`;
+    div.innerHTML = `
+      <div class="ticker-top">
+        <input class="ticker-input ticker-symbol" type="text" placeholder="Fund ticker (e.g. VOO)"
+          id="fund-symbol-${id}" maxlength="10"
+          oninput="fund401kData[${id}].symbol = this.value.toUpperCase(); this.value = this.value.toUpperCase();" />
+        <input class="ticker-input" type="number" placeholder="Balance $" min="0"
+          id="fund-balance-${id}" style="width:110px; text-align:right;"
+          oninput="fund401kData[${id}].balance = parseFloat(this.value)||0;"
+          onfocus="if(this.value==='0') this.value='';"
+          onblur="if(this.value==='') this.value='0';" />
+        <button class="ticker-lookup-btn" id="fund-btn-${id}" onclick="lookupFund401k(${id})">Look Up</button>
+        <button class="ticker-remove" onclick="removeFund401k(${id})" title="Remove">×</button>
+      </div>
+      <div class="ticker-result" id="fund-result-${id}"></div>
+      <div class="ticker-error" id="fund-error-${id}"></div>
+    `;
+    document.getElementById('fund401kList').appendChild(div);
+  }
+
+  function removeFund401k(id) {
+    delete fund401kData[id];
+    const el = document.getElementById(`fund401k-${id}`);
+    if (el) el.remove();
+    updateFund401kTotal();
+  }
+
+  async function lookupFund401k(id) {
+    const symbol = (document.getElementById(`fund-symbol-${id}`).value || '').trim().toUpperCase();
+    const balance = parseFloat(document.getElementById(`fund-balance-${id}`).value) || 0;
+    const btn = document.getElementById(`fund-btn-${id}`);
+    const resultEl = document.getElementById(`fund-result-${id}`);
+    const errorEl = document.getElementById(`fund-error-${id}`);
+
+    errorEl.style.display = 'none';
+    resultEl.classList.remove('visible');
+
+    if (!symbol) { errorEl.textContent = 'Please enter a fund ticker.'; errorEl.style.display = 'block'; return; }
+    if (balance <= 0) { errorEl.textContent = 'Please enter your balance in this fund.'; errorEl.style.display = 'block'; return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Loading...';
+
+    try {
+      const proxyRes = await fetch(`/api/stock?symbol=${symbol}`);
+      const proxyData = await proxyRes.json();
+
+      if (proxyData.error) {
+        errorEl.textContent = proxyData.error; errorEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Look Up'; return;
+      }
+
+      const zakatablePerShare = proxyData.zakatablePerShare;
+      const currentPrice = proxyData.currentPrice;
+      const sharesOwned = balance / currentPrice;
+      let zakatableValue, zakatablePct, method;
+
+      if (zakatablePerShare > 0 && currentPrice > 0) {
+        zakatableValue = zakatablePerShare * sharesOwned;
+        zakatablePct = ((zakatableValue / balance) * 100).toFixed(1);
+        method = 'balance-sheet';
+        resultEl.innerHTML = `
+          <div>Fund: <span class="highlight">${symbol}</span> &nbsp;|&nbsp; Balance: <span class="highlight">${fmt(balance)}</span></div>
+          <div>Zakatable portion: ${zakatablePct}% of fund value</div>
+          <div>Zakatable amount: <span class="highlight">${fmt(zakatableValue)}</span></div>
+          <div style="font-size:0.7rem; color:rgba(212,180,99,0.35); margin-top:2px;">Based on latest annual balance sheet — no penalty/tax deduction (Method 1)</div>
+        `;
+      } else {
+        zakatableValue = balance * 0.30;
+        method = 'fallback-30pct';
+        resultEl.innerHTML = `
+          <div>Fund: <span class="highlight">${symbol}</span> &nbsp;|&nbsp; Balance: <span class="highlight">${fmt(balance)}</span></div>
+          <div>Zakatable amount: <span class="highlight">${fmt(zakatableValue)}</span></div>
+          <div style="font-size:0.7rem; color:rgba(212,180,99,0.35); margin-top:2px;">Using 30% approximation — balance sheet data unavailable</div>
+        `;
+      }
+
+      fund401kData[id] = { symbol, balance, zakatableValue, method };
+      resultEl.classList.add('visible');
+      updateFund401kTotal();
+
+    } catch (err) {
+      errorEl.textContent = 'Network error. Please check your connection and try again.';
+      errorEl.style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Look Up';
+  }
+
+  function updateFund401kTotal() {
+    const total = Object.values(fund401kData).reduce((sum, f) => sum + (f.zakatableValue || 0), 0);
+    const totalEl = document.getElementById('fund401kTotal');
+    if (total > 0) {
+      totalEl.style.display = 'block';
+      const lines = Object.values(fund401kData)
+        .filter(f => f.zakatableValue > 0)
+        .map(f => `${f.symbol}: ${fmt(f.zakatableValue)} zakatable`)
+        .join('<br/>');
+      totalEl.innerHTML = `${lines}<br/><span style="color:rgba(212,180,99,0.85); font-weight:600;">Total zakatable (401k): ${fmt(total)}</span>`;
+    } else {
+      totalEl.style.display = 'none';
+    }
+  }
+
+  function get401kZakatable() {
+    if (current401kMethod === 1) {
+      return Object.values(fund401kData).reduce((sum, f) => sum + (f.zakatableValue || 0), 0);
+    } else {
+      const balance = val('balance401k');
+      const taxRate = val('taxRate401k');
+      const penalty = balance * EARLY_WITHDRAWAL_PENALTY;
+      const taxDed = balance * (taxRate / 100);
+      return Math.max(0, balance - penalty - taxDed);
+    }
   }
 
   async function importLivePrices() {
