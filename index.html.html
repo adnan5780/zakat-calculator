@@ -561,7 +561,6 @@ can also be entered here.</span>
   const NISAB_GOLD_GRAMS = 85;
   const NISAB_SILVER_GRAMS = 595;
   const EARLY_WITHDRAWAL_PENALTY = 0.10;
-  const FINNHUB_API_KEY = 'd6k81i1r01qko8c3qetgd6k81i1r01qko8c3qeu0';
   let nisabType = 'gold';
   let tickerCount = 0;
   let tickerData = {}; // { id: { symbol, shares, zakatableValue, method } }
@@ -636,16 +635,12 @@ can also be entered here.</span>
     btn.textContent = 'Loading...';
 
     try {
-      // Step 1: Get current price + basic financials (shares outstanding, etc.)
-      const [quoteRes, metricsRes, bsRes] = await Promise.all([
-        fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`),
-        fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${symbol}&metric=all&token=${FINNHUB_API_KEY}`),
-        fetch(`https://finnhub.io/api/v1/financials?symbol=${symbol}&statement=bs&freq=annual&token=${FINNHUB_API_KEY}`)
-      ]);
-
-      const quoteData = await quoteRes.json();
-      const metricsData = await metricsRes.json();
-      const bsData = await bsRes.json();
+      // Call our own backend proxy — avoids CORS issues
+      const proxyRes = await fetch(`/api/stock?symbol=${symbol}`);
+      const proxyData = await proxyRes.json();
+      const quoteData = proxyData.quote;
+      const metricsData = proxyData.metrics;
+      const bsData = proxyData.bs;
 
       const currentPrice = quoteData.c;
 
