@@ -112,7 +112,8 @@
     }
     input[type=number]:focus { border-color: rgba(212,180,99,0.5); }
     input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button { opacity: 0.4; }
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
 
     /* Nisab toggles & subtype labels */
     .toggle-group { display: flex; gap: 10px; }
