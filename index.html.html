@@ -348,13 +348,27 @@ zakatable wealth.</span>
         <input type="number" id="goldGrams" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
       </div>
     </div>
+    <!-- Import live prices button -->
+    <div style="margin: 10px 0 4px;">
+      <button id="importMetalsBtn" onclick="importLivePrices()" style="
+        width:100%; padding:10px;
+        background: linear-gradient(135deg, rgba(212,180,99,0.15) 0%, rgba(184,146,42,0.1) 100%);
+        border: 1px solid rgba(212,180,99,0.4); border-radius:10px;
+        color: #d4b463; font-family:'Cormorant Garamond',serif; font-size:0.95rem;
+        cursor:pointer; transition:all 0.2s; letter-spacing:0.03em;
+      " onmouseover="this.style.background='linear-gradient(135deg, rgba(212,180,99,0.25) 0%, rgba(184,146,42,0.18) 100%)'"
+         onmouseout="this.style.background='linear-gradient(135deg, rgba(212,180,99,0.15) 0%, rgba(184,146,42,0.1) 100%)'">
+        ✦ Import Live Gold &amp; Silver Prices
+      </button>
+      <div id="metalsStatus" style="font-size:0.72rem; color:rgba(212,180,99,0.45); text-align:center; margin-top:5px; display:none;"></div>
+    </div>
+
     <div class="gold-price-row">
       <div>
         <div class="input-label">Gold price / gram</div>
-        <div class="input-sublabel">Update with today's market rate</div>
+        <div class="input-sublabel">Auto-filled or enter manually</div>
       </div>
       <div class="gold-input-right">
-        <a href="https://goldprice.org/gold-price-per-gram.html" target="_blank" class="live-price-btn">Check live price →</a>
         <span class="input-prefix">$</span>
         <input type="number" id="goldPrice" value="95" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
       </div>
@@ -367,7 +381,10 @@ zakatable wealth.</span>
       </div>
     </div>
     <div class="input-row">
-      <div><div class="input-label">Silver price / gram</div></div>
+      <div>
+        <div class="input-label">Silver price / gram</div>
+        <div class="input-sublabel">Auto-filled or enter manually</div>
+      </div>
       <div class="input-right">
         <span class="input-prefix">$</span>
         <input type="number" id="silverPrice" value="1.05" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
@@ -892,6 +909,39 @@ can also be entered here.</span>
     }
 
     box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function importLivePrices() {
+    const btn = document.getElementById('importMetalsBtn');
+    const status = document.getElementById('metalsStatus');
+    btn.disabled = true;
+    btn.textContent = '⏳ Fetching live prices...';
+    status.style.display = 'none';
+
+    try {
+      const res = await fetch('/api/metals');
+      const data = await res.json();
+
+      if (data.error) {
+        status.textContent = '⚠ Could not fetch prices. Please try again.';
+        status.style.display = 'block';
+      } else {
+        document.getElementById('goldPrice').value = data.goldPerGram.toFixed(2);
+        document.getElementById('silverPrice').value = data.silverPerGram.toFixed(4);
+        calculate();
+        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        status.textContent = `✓ Prices updated at ${now}`;
+        status.style.color = 'rgba(150,210,150,0.7)';
+        status.style.display = 'block';
+      }
+    } catch (err) {
+      status.textContent = '⚠ Network error. Please try again.';
+      status.style.color = 'rgba(212,180,99,0.45)';
+      status.style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.textContent = '✦ Import Live Gold & Silver Prices';
   }
 
   window.addEventListener('DOMContentLoaded', positionTooltips);
