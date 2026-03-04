@@ -164,6 +164,48 @@
       margin-top: 6px; font-style: italic; display: none;
     }
 
+    /* Ticker rows */
+    .ticker-row {
+      background: rgba(212,180,99,0.04);
+      border: 1px solid rgba(212,180,99,0.15);
+      border-radius: 12px; padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .ticker-top { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    .ticker-input {
+      background: rgba(212,180,99,0.07); border: 1px solid rgba(212,180,99,0.2);
+      border-radius: 8px; color: #f0e6c8; font-size: 0.95rem;
+      padding: 7px 10px; outline: none;
+      font-family: 'Cormorant Garamond', serif; text-transform: uppercase;
+    }
+    .ticker-input::placeholder { color: rgba(212,180,99,0.3); text-transform:none; }
+    .ticker-symbol { width: 90px; }
+    .ticker-shares { width: 100px; text-align:right; }
+    .ticker-lookup-btn {
+      padding: 7px 12px; border-radius: 8px;
+      border: 1px solid rgba(212,180,99,0.35);
+      background: rgba(212,180,99,0.1); color: #d4b463;
+      font-family: 'Cormorant Garamond', serif; font-size: 0.85rem;
+      cursor: pointer; white-space: nowrap; transition: all 0.2s;
+    }
+    .ticker-lookup-btn:hover { background: rgba(212,180,99,0.2); }
+    .ticker-lookup-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .ticker-remove {
+      margin-left:auto; background:transparent; border:none;
+      color: rgba(212,180,99,0.3); font-size: 1.1rem;
+      cursor:pointer; padding: 2px 6px; transition: color 0.2s;
+    }
+    .ticker-remove:hover { color: rgba(212,180,99,0.8); }
+    .ticker-result {
+      font-size: 0.76rem; line-height: 1.8;
+      color: rgba(212,180,99,0.5); padding-top: 4px;
+      border-top: 1px solid rgba(212,180,99,0.1); margin-top:4px;
+      display: none;
+    }
+    .ticker-result.visible { display: block; }
+    .ticker-result .highlight { color: rgba(212,180,99,0.9); font-weight:600; }
+    .ticker-error { color: rgba(255,120,120,0.7); font-size:0.75rem; margin-top:4px; display:none; }
+
     /* Calculate button */
     .calc-btn {
       width: 100%; padding: 15px;
@@ -341,12 +383,14 @@ Balance × 2.5%</span>
 Full market value × 2.5%
 
 Long-term holdings:
-(Market value × 30%) × 2.5%
+Zakatable assets per share
+× shares owned × 2.5%
 
-Long-term = held to grow
-wealth, not to flip.</span>
+Uses real balance sheet data.
+Falls back to 30% if unavailable.</span>
       </div>
     </div>
+
     <div class="sublabel-tag" style="margin-top:4px">TRADING / SHORT-TERM</div>
     <div class="input-row">
       <div>
@@ -358,18 +402,29 @@ wealth, not to flip.</span>
         <input type="number" id="tradingStocks" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
       </div>
     </div>
-    <div class="sublabel-tag">LONG-TERM HOLDINGS</div>
-    <div class="input-row">
-      <div>
-        <div class="input-label">Long-term investments</div>
-        <div class="input-sublabel">e.g. stocks held 2+ years</div>
-      </div>
-      <div class="input-right">
-        <span class="input-prefix">$</span>
-        <input type="number" id="longTermStocks" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
-      </div>
+
+    <div class="sublabel-tag" style="margin-top:12px">LONG-TERM HOLDINGS — PER TICKER</div>
+    <div style="font-size:0.72rem; color:rgba(212,180,99,0.4); margin-bottom:10px; line-height:1.5;">
+      Enter each long-term holding individually for a precise calculation based on real balance sheet data.
     </div>
-    <div class="lt-note" id="ltNote"></div>
+
+    <div id="tickerList"></div>
+
+    <button onclick="addTicker()" style="
+      width:100%; margin-top:10px; padding:9px;
+      background:transparent; border:1px dashed rgba(212,180,99,0.3);
+      border-radius:10px; color:rgba(212,180,99,0.6);
+      font-family:'Cormorant Garamond',serif; font-size:0.95rem;
+      cursor:pointer; transition:all 0.2s;
+    " onmouseover="this.style.borderColor='rgba(212,180,99,0.6)';this.style.color='#d4b463'"
+       onmouseout="this.style.borderColor='rgba(212,180,99,0.3)';this.style.color='rgba(212,180,99,0.6)'">
+      + Add Stock
+    </button>
+
+    <div id="tickerTotal" style="display:none; margin-top:12px; padding:10px 14px;
+      background:rgba(212,180,99,0.05); border-radius:10px;
+      font-size:0.78rem; color:rgba(212,180,99,0.55); line-height:1.9;">
+    </div>
   </div>
 
   <!-- 401k -->
@@ -506,7 +561,10 @@ can also be entered here.</span>
   const NISAB_GOLD_GRAMS = 85;
   const NISAB_SILVER_GRAMS = 595;
   const EARLY_WITHDRAWAL_PENALTY = 0.10;
+  const FMP_API_KEY = '1bQFbzZ4YGSDnUaX4iMHvtQbrVe8rbzf';
   let nisabType = 'gold';
+  let tickerCount = 0;
+  let tickerData = {}; // { id: { symbol, shares, zakatableValue, method } }
 
   const fmt = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(val || 0);
 
@@ -516,7 +574,6 @@ can also be entered here.</span>
     nisabType = type;
     document.getElementById('btn-gold').classList.toggle('active', type === 'gold');
     document.getElementById('btn-silver').classList.toggle('active', type === 'silver');
-    calculate();
   }
 
   function clearZero(input) {
@@ -525,6 +582,146 @@ can also be entered here.</span>
 
   function restoreZero(input) {
     if (input.value === '') input.value = '0';
+  }
+
+  function addTicker() {
+    tickerCount++;
+    const id = tickerCount;
+    tickerData[id] = { symbol: '', shares: 0, zakatableValue: 0, method: null };
+
+    const div = document.createElement('div');
+    div.className = 'ticker-row';
+    div.id = `ticker-${id}`;
+    div.innerHTML = `
+      <div class="ticker-top">
+        <input class="ticker-input ticker-symbol" type="text" placeholder="Ticker (e.g. NVDA)"
+          id="symbol-${id}" maxlength="10"
+          oninput="tickerData[${id}].symbol = this.value.toUpperCase(); this.value = this.value.toUpperCase();"
+          onfocus="if(this.value==='') {}" />
+        <input class="ticker-input ticker-shares" type="number" placeholder="# Shares" min="0"
+          id="shares-${id}"
+          oninput="tickerData[${id}].shares = parseFloat(this.value)||0;"
+          onfocus="if(this.value==='0') this.value='';"
+          onblur="if(this.value==='') this.value='0';" />
+        <button class="ticker-lookup-btn" id="btn-${id}" onclick="lookupTicker(${id})">Look Up</button>
+        <button class="ticker-remove" onclick="removeTicker(${id})" title="Remove">×</button>
+      </div>
+      <div class="ticker-result" id="result-${id}"></div>
+      <div class="ticker-error" id="error-${id}"></div>
+    `;
+    document.getElementById('tickerList').appendChild(div);
+  }
+
+  function removeTicker(id) {
+    delete tickerData[id];
+    const el = document.getElementById(`ticker-${id}`);
+    if (el) el.remove();
+    updateTickerTotal();
+  }
+
+  async function lookupTicker(id) {
+    const symbol = (document.getElementById(`symbol-${id}`).value || '').trim().toUpperCase();
+    const shares = parseFloat(document.getElementById(`shares-${id}`).value) || 0;
+    const btn = document.getElementById(`btn-${id}`);
+    const resultEl = document.getElementById(`result-${id}`);
+    const errorEl = document.getElementById(`error-${id}`);
+
+    errorEl.style.display = 'none';
+    resultEl.classList.remove('visible');
+
+    if (!symbol) { showTickerError(id, 'Please enter a ticker symbol.'); return; }
+    if (shares <= 0) { showTickerError(id, 'Please enter number of shares.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Loading...';
+
+    try {
+      // Step 1: Get shares outstanding + current price
+      const profileRes = await fetch(`https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=${FMP_API_KEY}`);
+      const profileData = await profileRes.json();
+
+      if (!profileData || profileData.length === 0 || profileData['Error Message']) {
+        showTickerError(id, `Could not find data for "${symbol}". Check the ticker and try again.`);
+        btn.disabled = false; btn.textContent = 'Look Up'; return;
+      }
+
+      const profile = profileData[0];
+      const currentPrice = profile.price;
+      const sharesOutstanding = profile.sharesOutstanding;
+      const positionValue = shares * currentPrice;
+
+      // Step 2: Get balance sheet
+      const bsRes = await fetch(`https://financialmodelingprep.com/api/v3/balance-sheet-statement/${symbol}?limit=1&apikey=${FMP_API_KEY}`);
+      const bsData = await bsRes.json();
+
+      let zakatableValue, method, zakatablePct;
+
+      if (bsData && bsData.length > 0 && sharesOutstanding > 0) {
+        const bs = bsData[0];
+        // Zakatable assets = cash + short-term investments + net receivables + inventory
+        const cash = bs.cashAndCashEquivalents || 0;
+        const shortTermInv = bs.shortTermInvestments || 0;
+        const receivables = bs.netReceivables || 0;
+        const inventory = bs.inventory || 0;
+        const totalZakatableAssets = cash + shortTermInv + receivables + inventory;
+        const zakatablePerShare = totalZakatableAssets / sharesOutstanding;
+        zakatableValue = zakatablePerShare * shares;
+        zakatablePct = ((zakatableValue / positionValue) * 100).toFixed(1);
+        method = 'balance-sheet';
+
+        resultEl.innerHTML = `
+          <div>Ticker: <span class="highlight">${symbol}</span> &nbsp;|&nbsp; ${shares} shares @ ${fmt(currentPrice)}</div>
+          <div>Position value: <span class="highlight">${fmt(positionValue)}</span></div>
+          <div>Zakatable assets/share: ${fmt(zakatablePerShare)} (${zakatablePct}% of market value)</div>
+          <div>Zakatable amount: <span class="highlight">${fmt(zakatableValue)}</span></div>
+          <div style="font-size:0.7rem; color:rgba(212,180,99,0.35); margin-top:2px;">Based on latest balance sheet data</div>
+        `;
+      } else {
+        // Fallback to 30%
+        zakatableValue = positionValue * 0.30;
+        method = 'fallback-30pct';
+        resultEl.innerHTML = `
+          <div>Ticker: <span class="highlight">${symbol}</span> &nbsp;|&nbsp; ${shares} shares @ ${fmt(currentPrice)}</div>
+          <div>Position value: <span class="highlight">${fmt(positionValue)}</span></div>
+          <div>Zakatable amount: <span class="highlight">${fmt(zakatableValue)}</span> (30% fallback — balance sheet unavailable)</div>
+        `;
+      }
+
+      tickerData[id] = { symbol, shares, zakatableValue, method };
+      resultEl.classList.add('visible');
+      updateTickerTotal();
+
+    } catch (err) {
+      showTickerError(id, 'Network error. Please check your connection and try again.');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Look Up';
+  }
+
+  function showTickerError(id, msg) {
+    const el = document.getElementById(`error-${id}`);
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function updateTickerTotal() {
+    const total = Object.values(tickerData).reduce((sum, t) => sum + (t.zakatableValue || 0), 0);
+    const totalEl = document.getElementById('tickerTotal');
+    if (total > 0) {
+      totalEl.style.display = 'block';
+      const lines = Object.values(tickerData)
+        .filter(t => t.zakatableValue > 0)
+        .map(t => `${t.symbol}: ${fmt(t.zakatableValue)} zakatable`)
+        .join('<br/>');
+      totalEl.innerHTML = `${lines}<br/><span style="color:rgba(212,180,99,0.85); font-weight:600;">Total zakatable (long-term): ${fmt(total)}</span>`;
+    } else {
+      totalEl.style.display = 'none';
+    }
+  }
+
+  function getLongTermZakatableTotal() {
+    return Object.values(tickerData).reduce((sum, t) => sum + (t.zakatableValue || 0), 0);
   }
 
   function positionTooltips() {
@@ -547,29 +744,8 @@ can also be entered here.</span>
   }
 
   function calculate() {
-    const goldGrams = val('goldGrams');
-    const goldPrice = val('goldPrice');
-    const silverGrams = val('silverGrams');
-    const silverPrice = val('silverPrice');
-    const cash = val('cash');
-    const tradingStocks = val('tradingStocks');
-    const longTermStocks = val('longTermStocks');
     const balance401k = val('balance401k');
     const taxRate = val('taxRate401k');
-    const businessAssets = val('businessAssets');
-    const receivables = val('receivables');
-    const liabilities = val('liabilities');
-
-    // Long-term note
-    const ltNote = document.getElementById('ltNote');
-    if (longTermStocks > 0) {
-      ltNote.style.display = 'block';
-      ltNote.textContent = `Zakatable portion: ${fmt(longTermStocks * 0.30)} (30% of ${fmt(longTermStocks)})`;
-    } else {
-      ltNote.style.display = 'none';
-    }
-
-    // 401k breakdown
     const penalty = balance401k * EARLY_WITHDRAWAL_PENALTY;
     const taxDed = balance401k * (taxRate / 100);
     const net401k = Math.max(0, balance401k - penalty - taxDed);
@@ -593,7 +769,6 @@ can also be entered here.</span>
     const silverPrice = val('silverPrice');
     const cash = val('cash');
     const tradingStocks = val('tradingStocks');
-    const longTermStocks = val('longTermStocks');
     const balance401k = val('balance401k');
     const taxRate = val('taxRate401k');
     const businessAssets = val('businessAssets');
@@ -603,7 +778,7 @@ can also be entered here.</span>
     const penalty = balance401k * EARLY_WITHDRAWAL_PENALTY;
     const taxDed = balance401k * (taxRate / 100);
     const net401k = Math.max(0, balance401k - penalty - taxDed);
-    const longTermZakatable = longTermStocks * 0.30;
+    const longTermZakatable = getLongTermZakatableTotal();
 
     const totalAssets = goldGrams * goldPrice + silverGrams * silverPrice + cash + tradingStocks + longTermZakatable + net401k + businessAssets + receivables;
     const netWorth = Math.max(0, totalAssets - liabilities);
