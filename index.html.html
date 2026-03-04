@@ -638,11 +638,15 @@ can also be entered here.</span>
       // Call our own backend proxy — avoids CORS issues
       const proxyRes = await fetch(`/api/stock?symbol=${symbol}`);
       const proxyData = await proxyRes.json();
-      const quoteData = proxyData.quote;
-      const metricsData = proxyData.metrics;
-      const bsData = proxyData.bs;
 
-      const currentPrice = quoteData.c;
+      if (proxyData.error) {
+        showTickerError(id, proxyData.error);
+        btn.disabled = false; btn.textContent = 'Look Up'; return;
+      }
+
+      const currentPrice = proxyData.currentPrice;
+      const balanceSheet = proxyData.balanceSheet;
+      const sharesOutstanding = proxyData.sharesOutstanding;
 
       if (!currentPrice || currentPrice === 0) {
         showTickerError(id, `Could not find data for "${symbol}". Check the ticker and try again.`);
@@ -652,17 +656,12 @@ can also be entered here.</span>
       const positionValue = shares * currentPrice;
       let zakatableValue, method, zakatablePct;
 
-      // Try to get balance sheet data
-      const sharesOutstanding = metricsData?.metric?.shareOutstanding * 1e6; // Finnhub returns in millions
-      const financials = bsData?.financials;
-
-      if (financials && financials.length > 0 && sharesOutstanding > 0) {
-        const latest = financials[0];
+      if (balanceSheet && sharesOutstanding > 0) {
         // Zakatable assets: cash + short-term investments + receivables + inventory
-        const cash = latest.cashAndEquivalents || latest.cash || 0;
-        const shortTermInv = latest.shortTermInvestments || 0;
-        const receivables = latest.accountsReceivable || latest.netReceivables || 0;
-        const inventory = latest.inventory || 0;
+        const cash = parseFloat(balanceSheet.cashAndCashEquivalentsAtCarryingValue) || 0;
+        const shortTermInv = parseFloat(balanceSheet.shortTermInvestments) || 0;
+        const receivables = parseFloat(balanceSheet.currentNetReceivables) || 0;
+        const inventory = parseFloat(balanceSheet.inventory) || 0;
         const totalZakatableAssets = cash + shortTermInv + receivables + inventory;
         const zakatablePerShare = totalZakatableAssets / sharesOutstanding;
         zakatableValue = zakatablePerShare * shares;
