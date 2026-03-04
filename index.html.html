@@ -416,39 +416,53 @@ Falls back to 30% if unavailable.</span>
       </div>
     </div>
 
-    <div class="sublabel-tag" style="margin-top:4px">TRADING / SHORT-TERM</div>
-    <div class="input-row">
-      <div>
-        <div class="input-label">Active trades & short-term</div>
-        <div class="input-sublabel">Full market value is zakatable</div>
+    <!-- Short Term -->
+    <div style="background:rgba(212,180,99,0.04); border:1px solid rgba(212,180,99,0.15); border-radius:12px; padding:14px 16px; margin-top:8px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+        <span style="font-size:1rem;">⚡</span>
+        <span style="font-family:'Cormorant Garamond',serif; font-size:1rem; font-weight:600; color:#d4b463;">Short-Term / Trading</span>
       </div>
-      <div class="input-right">
-        <span class="input-prefix">$</span>
-        <input type="number" id="tradingStocks" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.6;">
+        Held for <strong style="color:rgba(212,180,99,0.7);">less than 1 year</strong> or actively traded for profit.
+        Full market value is zakatable at 2.5%.
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="input-label">Total market value</div>
+        <div class="input-right">
+          <span class="input-prefix">$</span>
+          <input type="number" id="tradingStocks" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+        </div>
       </div>
     </div>
 
-    <div class="sublabel-tag" style="margin-top:12px">LONG-TERM HOLDINGS — PER TICKER</div>
-    <div style="font-size:0.72rem; color:rgba(212,180,99,0.4); margin-bottom:10px; line-height:1.5;">
-      Enter each long-term holding individually for a precise calculation based on real balance sheet data.
-    </div>
+    <!-- Long Term -->
+    <div style="background:rgba(212,180,99,0.04); border:1px solid rgba(212,180,99,0.15); border-radius:12px; padding:14px 16px; margin-top:10px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+        <span style="font-size:1rem;">🌱</span>
+        <span style="font-family:'Cormorant Garamond',serif; font-size:1rem; font-weight:600; color:#d4b463;">Long-Term Holdings</span>
+      </div>
+      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.6;">
+        Held for <strong style="color:rgba(212,180,99,0.7);">more than 1 year</strong> with no near-term plan to sell.
+        Zakat is calculated using live balance sheet data per ticker for maximum accuracy.
+      </div>
 
-    <div id="tickerList"></div>
+      <div id="tickerList"></div>
 
-    <button onclick="addTicker()" style="
-      width:100%; margin-top:10px; padding:9px;
-      background:transparent; border:1px dashed rgba(212,180,99,0.3);
-      border-radius:10px; color:rgba(212,180,99,0.6);
-      font-family:'Cormorant Garamond',serif; font-size:0.95rem;
-      cursor:pointer; transition:all 0.2s;
-    " onmouseover="this.style.borderColor='rgba(212,180,99,0.6)';this.style.color='#d4b463'"
-       onmouseout="this.style.borderColor='rgba(212,180,99,0.3)';this.style.color='rgba(212,180,99,0.6)'">
-      + Add Stock
-    </button>
+      <button onclick="addTicker()" style="
+        width:100%; margin-top:6px; padding:9px;
+        background:transparent; border:1px dashed rgba(212,180,99,0.25);
+        border-radius:10px; color:rgba(212,180,99,0.55);
+        font-family:'Cormorant Garamond',serif; font-size:0.9rem;
+        cursor:pointer; transition:all 0.2s;
+      " onmouseover="this.style.borderColor='rgba(212,180,99,0.6)';this.style.color='#d4b463'"
+         onmouseout="this.style.borderColor='rgba(212,180,99,0.25)';this.style.color='rgba(212,180,99,0.55)'">
+        + Add Long-Term Stock
+      </button>
 
-    <div id="tickerTotal" style="display:none; margin-top:12px; padding:10px 14px;
-      background:rgba(212,180,99,0.05); border-radius:10px;
-      font-size:0.78rem; color:rgba(212,180,99,0.55); line-height:1.9;">
+      <div id="tickerTotal" style="display:none; margin-top:12px; padding:10px 14px;
+        background:rgba(212,180,99,0.05); border-radius:10px;
+        font-size:0.78rem; color:rgba(212,180,99,0.55); line-height:1.9;">
+      </div>
     </div>
   </div>
 
