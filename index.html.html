@@ -259,6 +259,31 @@
     .result-cell.highlight .result-cell-value { color: #d4b463; }
     .result-msg { margin-top: 16px; font-size: 0.82rem; line-height: 1.6; }
 
+    /* Breakdown table */
+    .breakdown-table {
+      width: 100%; margin: 20px 0 16px;
+      border-collapse: collapse;
+    }
+    .breakdown-table td {
+      padding: 7px 4px; font-size: 0.82rem;
+      color: rgba(240,230,200,0.6);
+      border-bottom: 1px solid rgba(212,180,99,0.07);
+    }
+    .breakdown-table td:last-child { text-align: right; font-family: 'Cormorant Garamond', serif; font-size: 0.9rem; }
+    .breakdown-table .bt-label { color: rgba(240,230,200,0.5); }
+    .breakdown-table .bt-zero { color: rgba(240,230,200,0.2); }
+    .breakdown-table .bt-total td {
+      border-top: 1px solid rgba(212,180,99,0.3);
+      border-bottom: none;
+      padding-top: 10px; margin-top: 4px;
+      color: rgba(212,180,99,0.8);
+      font-weight: 600;
+    }
+    .breakdown-section-title {
+      font-size: 0.7rem; color: rgba(212,180,99,0.4);
+      letter-spacing: 0.1em; margin-bottom: 4px; margin-top: 18px;
+      text-align: center;
+    }
     .footer-note {
       text-align: center; font-size: 0.72rem;
       color: rgba(240,230,200,0.22); margin-top: 22px; line-height: 1.7;
@@ -540,6 +565,11 @@ can also be entered here.</span>
     <div class="result-emoji" id="resultEmoji">🌙</div>
     <div class="result-label" id="resultLabel">ZAKAT DUE</div>
     <div class="result-amount" id="resultAmount">$0.00</div>
+    <div class="breakdown-section-title">BREAKDOWN BY CATEGORY</div>
+    <table class="breakdown-table" id="breakdownTable">
+      <tbody id="breakdownBody"></tbody>
+    </table>
+
     <div class="result-grid">
       <div class="result-cell"><div class="result-cell-label">Total Zakatable Assets</div><div class="result-cell-value" id="rTotalAssets">$0.00</div></div>
       <div class="result-cell"><div class="result-cell-label">Net Zakatable Wealth</div><div class="result-cell-value" id="rNetWorth">$0.00</div></div>
@@ -770,11 +800,58 @@ can also be entered here.</span>
     const net401k = Math.max(0, balance401k - penalty - taxDed);
     const longTermZakatable = getLongTermZakatableTotal();
 
-    const totalAssets = goldGrams * goldPrice + silverGrams * silverPrice + cash + tradingStocks + longTermZakatable + net401k + businessAssets + receivables;
+    // Per-category zakatable amounts
+    const goldZakatable = goldGrams * goldPrice;
+    const silverZakatable = silverGrams * silverPrice;
+    const cashZakatable = cash;
+    const tradingZakatable = tradingStocks;
+    const longTermZakatableAmt = longTermZakatable;
+    const retirement401kZakatable = net401k;
+    const businessZakatable = businessAssets;
+    const receivablesZakatable = receivables;
+
+    // Per-category zakat due
+    const categories = [
+      { label: 'Gold',                  zakatable: goldZakatable },
+      { label: 'Silver',                zakatable: silverZakatable },
+      { label: 'Cash & Savings',        zakatable: cashZakatable },
+      { label: 'Trading Stocks',        zakatable: tradingZakatable },
+      { label: 'Long-term Stocks',      zakatable: longTermZakatableAmt },
+      { label: '401(k)',                zakatable: retirement401kZakatable },
+      { label: 'Business Assets',       zakatable: businessZakatable },
+      { label: 'Receivables',           zakatable: receivablesZakatable },
+    ];
+
+    const totalAssets = categories.reduce((s, c) => s + c.zakatable, 0);
     const netWorth = Math.max(0, totalAssets - liabilities);
     const nisabThreshold = nisabType === 'gold' ? NISAB_GOLD_GRAMS * goldPrice : NISAB_SILVER_GRAMS * silverPrice;
     const eligible = netWorth >= nisabThreshold;
     const zakatDue = eligible ? netWorth * ZAKAT_RATE : 0;
+
+    // Build breakdown table — only show categories with a value
+    const tbody = document.getElementById('breakdownBody');
+    tbody.innerHTML = '';
+    categories.forEach(c => {
+      if (c.zakatable <= 0) return;
+      const zakatAmt = c.zakatable * ZAKAT_RATE;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="bt-label">${c.label}</td>
+        <td style="text-align:right; color:rgba(240,230,200,0.35); font-size:0.78rem; padding-right:8px">${fmt(c.zakatable)} zakatable</td>
+        <td>${fmt(zakatAmt)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Totals row
+    const totalTr = document.createElement('tr');
+    totalTr.className = 'bt-total';
+    totalTr.innerHTML = `
+      <td>Total Zakat Due</td>
+      <td></td>
+      <td>${fmt(zakatDue)}</td>
+    `;
+    tbody.appendChild(totalTr);
 
     const box = document.getElementById('resultBox');
     box.style.display = 'block';
