@@ -529,9 +529,12 @@ Per Fiqh Council of North America.</span>
 
     <!-- Method 1 -->
     <div id="method1Section">
-      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.6;">
+      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:8px; line-height:1.6;">
         Enter each fund in your 401(k) with its ticker and your balance in that fund.
         Zakat is based on the fund's actual zakatable assets — <strong style="color:rgba(212,180,99,0.7);">no penalty or tax deduction.</strong>
+      </div>
+      <div style="font-size:0.71rem; background:rgba(212,180,99,0.05); border:1px solid rgba(212,180,99,0.15); border-radius:8px; padding:8px 12px; margin-bottom:12px; color:rgba(212,180,99,0.5); line-height:1.7;">
+        💡 <strong style="color:rgba(212,180,99,0.7);">Using a CIT (Collective Investment Trust)?</strong> CITs are employer-only funds with no public ticker. Find the equivalent public mutual fund or ETF — for example, Harbor Capital Appreciation CIT ≈ <strong>HACAX</strong>. A quick Google search of your fund name + "mutual fund equivalent" usually works. If balance sheet data still isn't found, the calculator will automatically fall back to Method 2.
       </div>
       <div id="fund401kList"></div>
       <button onclick="addFund401k()" style="
@@ -1061,12 +1064,17 @@ can also be entered here.</span>
           <div style="font-size:0.7rem; color:rgba(212,180,99,0.35); margin-top:2px;">Based on latest annual balance sheet — no penalty/tax deduction (Method 1)</div>
         `;
       } else {
-        zakatableValue = balance * 0.30;
-        method = 'fallback-30pct';
+        // Fallback to Method 2: balance minus penalty and taxes
+        const taxRate = val('taxRate401k') || 22;
+        const penalty = balance * EARLY_WITHDRAWAL_PENALTY;
+        const taxDed = balance * (taxRate / 100);
+        zakatableValue = Math.max(0, balance - penalty - taxDed);
+        method = 'fallback-method2';
         resultEl.innerHTML = `
           <div>Fund: <span class="highlight">${symbol}</span> &nbsp;|&nbsp; Balance: <span class="highlight">${fmt(balance)}</span></div>
+          <div style="color:rgba(255,200,100,0.7); font-size:0.73rem; margin-top:2px;">⚠ Balance sheet data unavailable for this fund.</div>
+          <div style="font-size:0.73rem; margin-top:2px;">Falling back to Method 2 — penalty (10%) + tax (${taxRate}%) deducted.</div>
           <div>Zakatable amount: <span class="highlight">${fmt(zakatableValue)}</span></div>
-          <div style="font-size:0.7rem; color:rgba(212,180,99,0.35); margin-top:2px;">Using 30% approximation — balance sheet data unavailable</div>
         `;
       }
 
