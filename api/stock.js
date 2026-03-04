@@ -21,16 +21,37 @@ module.exports = async function handler(req, res) {
   const { symbol } = req.query;
   if (!symbol) { res.status(400).json({ error: 'Symbol required' }); return; }
 
-  const API_KEY = 'd6k81i1r01qko8c3qetgd6k81i1r01qko8c3qeu0';
+  const API_KEY = 'OWWSOT0K004I5E9C';
 
   try {
-    const [quote, metrics, bs] = await Promise.all([
-      httpsGet(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`),
-      httpsGet(`https://finnhub.io/api/v1/stock/metric?symbol=${symbol}&metric=all&token=${API_KEY}`),
-      httpsGet(`https://finnhub.io/api/v1/financials?symbol=${symbol}&statement=bs&freq=annual&token=${API_KEY}`)
+    // Fetch price quote and balance sheet in parallel
+    const [quoteData, balanceSheetData] = await Promise.all([
+      httpsGet(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`),
+      httpsGet(`https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol=${symbol}&apikey=${API_KEY}`)
     ]);
 
-    res.status(200).json({ quote, metrics, bs });
+    const quote = quoteData['Global Quote'];
+    if (!quote || !quote['05. price']) {
+      res.status(404).json({ error: `Could not find data for "${symbol}". Check the ticker and try again.` });
+      return;
+    }
+
+    const currentPrice = parseFloat(quote['05. price']);
+
+    // Get latest annual balance sheet
+    const annualReports = balanceSheetData.annualReports;
+    let balanceSheet = null;
+    if (annualReports && annualReports.length > 0) {
+      balanceSheet = annualReports[0];
+    }
+
+    // Get shares outstanding from overview
+    const overviewData = await httpsGet(
+      `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}&apikey=${API_KEY}`
+    );
+    const sharesOutstanding = parseFloat(overviewData.SharesOutstanding) || 0;
+
+    res.status(200).json({ currentPrice, balanceSheet, sharesOutstanding });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
