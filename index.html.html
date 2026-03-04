@@ -561,7 +561,7 @@ can also be entered here.</span>
   const NISAB_GOLD_GRAMS = 85;
   const NISAB_SILVER_GRAMS = 595;
   const EARLY_WITHDRAWAL_PENALTY = 0.10;
-  const FMP_API_KEY = '1bQFbzZ4YGSDnUaX4iMHvtQbrVe8rbzf';
+  const FINNHUB_API_KEY = 'd6k81i1r01qko8c3qetgd6k81i1r01qko8c3qeu0';
   let nisabType = 'gold';
   let tickerCount = 0;
   let tickerData = {}; // { id: { symbol, shares, zakatableValue, method } }
@@ -636,33 +636,38 @@ can also be entered here.</span>
     btn.textContent = 'Loading...';
 
     try {
-      // Step 1: Get shares outstanding + current price
-      const profileRes = await fetch(`https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=${FMP_API_KEY}`);
-      const profileData = await profileRes.json();
+      // Step 1: Get current price + basic financials (shares outstanding, etc.)
+      const [quoteRes, metricsRes, bsRes] = await Promise.all([
+        fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`),
+        fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${symbol}&metric=all&token=${FINNHUB_API_KEY}`),
+        fetch(`https://finnhub.io/api/v1/financials?symbol=${symbol}&statement=bs&freq=annual&token=${FINNHUB_API_KEY}`)
+      ]);
 
-      if (!profileData || profileData.length === 0 || profileData['Error Message']) {
+      const quoteData = await quoteRes.json();
+      const metricsData = await metricsRes.json();
+      const bsData = await bsRes.json();
+
+      const currentPrice = quoteData.c;
+
+      if (!currentPrice || currentPrice === 0) {
         showTickerError(id, `Could not find data for "${symbol}". Check the ticker and try again.`);
         btn.disabled = false; btn.textContent = 'Look Up'; return;
       }
 
-      const profile = profileData[0];
-      const currentPrice = profile.price;
-      const sharesOutstanding = profile.sharesOutstanding;
       const positionValue = shares * currentPrice;
-
-      // Step 2: Get balance sheet
-      const bsRes = await fetch(`https://financialmodelingprep.com/api/v3/balance-sheet-statement/${symbol}?limit=1&apikey=${FMP_API_KEY}`);
-      const bsData = await bsRes.json();
-
       let zakatableValue, method, zakatablePct;
 
-      if (bsData && bsData.length > 0 && sharesOutstanding > 0) {
-        const bs = bsData[0];
-        // Zakatable assets = cash + short-term investments + net receivables + inventory
-        const cash = bs.cashAndCashEquivalents || 0;
-        const shortTermInv = bs.shortTermInvestments || 0;
-        const receivables = bs.netReceivables || 0;
-        const inventory = bs.inventory || 0;
+      // Try to get balance sheet data
+      const sharesOutstanding = metricsData?.metric?.shareOutstanding * 1e6; // Finnhub returns in millions
+      const financials = bsData?.financials;
+
+      if (financials && financials.length > 0 && sharesOutstanding > 0) {
+        const latest = financials[0];
+        // Zakatable assets: cash + short-term investments + receivables + inventory
+        const cash = latest.cashAndEquivalents || latest.cash || 0;
+        const shortTermInv = latest.shortTermInvestments || 0;
+        const receivables = latest.accountsReceivable || latest.netReceivables || 0;
+        const inventory = latest.inventory || 0;
         const totalZakatableAssets = cash + shortTermInv + receivables + inventory;
         const zakatablePerShare = totalZakatableAssets / sharesOutstanding;
         zakatableValue = zakatablePerShare * shares;
@@ -674,7 +679,7 @@ can also be entered here.</span>
           <div>Position value: <span class="highlight">${fmt(positionValue)}</span></div>
           <div>Zakatable assets/share: ${fmt(zakatablePerShare)} (${zakatablePct}% of market value)</div>
           <div>Zakatable amount: <span class="highlight">${fmt(zakatableValue)}</span></div>
-          <div style="font-size:0.7rem; color:rgba(212,180,99,0.35); margin-top:2px;">Based on latest balance sheet data</div>
+          <div style="font-size:0.7rem; color:rgba(212,180,99,0.35); margin-top:2px;">Based on latest annual balance sheet</div>
         `;
       } else {
         // Fallback to 30%
@@ -683,7 +688,8 @@ can also be entered here.</span>
         resultEl.innerHTML = `
           <div>Ticker: <span class="highlight">${symbol}</span> &nbsp;|&nbsp; ${shares} shares @ ${fmt(currentPrice)}</div>
           <div>Position value: <span class="highlight">${fmt(positionValue)}</span></div>
-          <div>Zakatable amount: <span class="highlight">${fmt(zakatableValue)}</span> (30% fallback — balance sheet unavailable)</div>
+          <div>Zakatable amount: <span class="highlight">${fmt(zakatableValue)}</span></div>
+          <div style="font-size:0.7rem; color:rgba(212,180,99,0.35); margin-top:2px;">Using 30% approximation — balance sheet data unavailable</div>
         `;
       }
 
