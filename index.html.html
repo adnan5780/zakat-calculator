@@ -630,7 +630,7 @@ Per Fiqh Council of North America.</span>
             border:1px solid #d4b463; background:rgba(212,180,99,0.15);
             color:#d4b463; cursor:pointer; transition:all 0.2s;
             font-family:'Cormorant Garamond',serif; font-size:0.82rem; line-height:1.5;">
-            📄 I have my tax return<br/><span style="font-size:0.72rem; opacity:0.7;">Use AGI from Form 1040</span>
+            📄 I have my tax return<br/><span style="font-size:0.72rem; opacity:0.7;">Use Line 15 from Form 1040</span>
           </button>
           <button id="btnEstimate" onclick="setTaxMode('estimate')" style="
             flex:1; padding:9px 6px; border-radius:10px;
@@ -681,8 +681,8 @@ Per Fiqh Council of North America.</span>
       <div id="taxReturnFields">
         <div class="input-row">
           <div>
-            <div class="input-label">Adjusted Gross Income (AGI)</div>
-            <div class="input-sublabel">Line 11 on your Form 1040 — already reflects your actual deductions and adjustments</div>
+            <div class="input-label">Taxable Income</div>
+            <div class="input-sublabel">Line 15 on your Form 1040 — after your standard or itemized deduction, this is the exact number the IRS applies brackets to</div>
           </div>
           <div class="input-right">
             <span class="input-prefix">$</span>
@@ -1961,7 +1961,7 @@ Source: SeekersGuidance
       lines += `<div>Standard deduction (${filingStatus === 'mfj' ? 'MFJ' : filingStatus === 'hoh' ? 'HOH' : 'Single'}): <span style="color:rgba(212,180,99,0.5);">− ${fmt(STD_DEDUCTION[filingStatus])}</span></div>`;
       lines += `<div style="border-top:1px solid rgba(212,180,99,0.1); margin:4px 0;"></div>`;
     }
-    lines += `<div>Your taxable income (excl. 401k): <span style="color:rgba(212,180,99,0.7);">${fmt(taxableIncome)}</span>${taxMode === 'return' ? ' <span style="font-size:0.68rem; opacity:0.5;">(AGI from Form 1040)</span>' : ''}</div>`;
+    lines += `<div>Your taxable income (excl. 401k): <span style="color:rgba(212,180,99,0.7);">${fmt(taxableIncome)}</span>${taxMode === 'return' ? ' <span style="font-size:0.68rem; opacity:0.5;">(Line 15, Form 1040)</span>' : ''}</div>`;
     lines += `<div>401(k) hypothetical withdrawal: <span style="color:rgba(212,180,99,0.7);">+ ${fmt(balance)}</span></div>`;
     lines += `<div style="border-top:1px solid rgba(212,180,99,0.1); margin:4px 0;"></div>`;
     lines += `<div>10% early withdrawal penalty: <span style="color:rgba(255,120,120,0.7);">− ${fmt(penalty)}</span></div>`;
