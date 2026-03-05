@@ -208,7 +208,7 @@
     .ticker-result .highlight { color: rgba(212,180,99,0.9); font-weight:600; }
     .ticker-error { color: rgba(255,120,120,0.7); font-size:0.75rem; margin-top:4px; display:none; }
 
-    /* Calculate button */
+    /* Calculate button — inline version (hidden, kept for spacing) */
     .calc-btn {
       width: 100%; padding: 15px;
       background: linear-gradient(135deg, #d4b463 0%, #b8922a 100%);
@@ -216,8 +216,32 @@
       font-size: 1.05rem; font-family: 'Cormorant Garamond', serif;
       font-weight: 700; letter-spacing: 0.08em; cursor: pointer;
       margin-bottom: 22px; transition: opacity 0.2s;
+      display: none; /* hidden — replaced by sticky button below */
     }
     .calc-btn:hover { opacity: 0.88; }
+
+    /* Sticky floating Calculate button — always visible at bottom of screen */
+    .sticky-calc-btn {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 48px);
+      max-width: 572px;
+      padding: 15px;
+      background: linear-gradient(135deg, #d4b463 0%, #b8922a 100%);
+      border: none; border-radius: 14px; color: #0d1117;
+      font-size: 1.05rem; font-family: 'Cormorant Garamond', serif;
+      font-weight: 700; letter-spacing: 0.08em; cursor: pointer;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(212,180,99,0.2);
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 1000;
+    }
+    .sticky-calc-btn:hover { opacity: 0.9; transform: translateX(-50%) translateY(-2px); }
+    .sticky-calc-btn:active { transform: translateX(-50%) translateY(0px); }
+
+    /* Extra bottom padding on container so content isn't hidden behind sticky button */
+    .container { padding-bottom: 90px; }
 
     /* Results */
     .result-box {
@@ -289,6 +313,32 @@
     .footer-note {
       text-align: center; font-size: 0.72rem;
       color: rgba(240,230,200,0.22); margin-top: 22px; line-height: 1.7;
+    }
+
+    /* Collapsible sections — for long explanatory text blocks */
+    .collapsible-toggle {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.72rem; color: rgba(212,180,99,0.45);
+      cursor: pointer; margin-bottom: 6px;
+      background: none; border: none; padding: 0;
+      font-family: 'Lato', sans-serif; text-align: left;
+      transition: color 0.2s;
+    }
+    .collapsible-toggle:hover { color: rgba(212,180,99,0.8); }
+    .collapsible-toggle .chevron {
+      font-size: 0.6rem; transition: transform 0.2s;
+      display: inline-block;
+    }
+    .collapsible-toggle.open .chevron { transform: rotate(90deg); }
+    .collapsible-content {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+    }
+    .collapsible-content.open {
+      max-height: 600px;
+      opacity: 1;
     }
   </style>
 </head>
@@ -558,8 +608,13 @@ Per Fiqh Council of North America.</span>
 
     <!-- Method toggle -->
     <div style="margin-bottom:14px;">
-      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:8px; line-height:1.6;">
-        <strong style="color:rgba(212,180,99,0.7);">Method 1 is recommended for most people.</strong> Use Method 2 for more advanced purposes only if your specific fund's balance sheet data is publicly available (e.g. a broad ETF like VOO).
+      <!-- Quick orientation for first-time users -->
+      <div style="background:rgba(212,180,99,0.06); border:1px solid rgba(212,180,99,0.2); border-radius:10px; padding:10px 14px; margin-bottom:12px;">
+        <div style="font-size:0.75rem; color:rgba(212,180,99,0.8); font-weight:600; margin-bottom:4px;">👋 Most people should use Method 1</div>
+        <div style="font-size:0.72rem; color:rgba(212,180,99,0.5); line-height:1.7;">
+          Method 1 calculates zakat on what you'd actually receive if you withdrew today — after the 10% penalty and income taxes. It's straightforward and works for everyone.<br/>
+          Method 2 is advanced — it looks up your fund's actual balance sheet to calculate a more precise zakatable amount. Only use it if your fund's data is publicly available (e.g. a broad ETF like VOO).
+        </div>
       </div>
       <div style="display:flex; gap:10px;">
         <button id="btn401m2" onclick="set401kMethod(2)" style="
@@ -821,8 +876,13 @@ Source: SeekersGuidance
 (Hanafi)</span>
       </div>
     </div>
-    <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.6;">
-      The rental property itself is <strong style="color:rgba(212,180,99,0.7);">not zakatable</strong> — only the cash it generates. Enter the balance of your dedicated rental account on your zakat due date. This balance already reflects all rent received minus all expenses paid (mortgage, maintenance, taxes, repairs). If rental income mixes with personal funds, enter your best estimate of net rental cash on hand.
+    <button class="collapsible-toggle" onclick="toggleCollapsible('rentalDetail', this)">
+      <span class="chevron">▶</span> The property itself is <strong style="color:rgba(212,180,99,0.7);">not zakatable</strong> — only the cash it generates. Tap for details.
+    </button>
+    <div class="collapsible-content" id="rentalDetail">
+      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.7; padding: 6px 0;">
+        Enter the balance of your dedicated rental account on your zakat due date. This balance already reflects all rent received minus all expenses paid (mortgage, maintenance, taxes, repairs). If rental income mixes with personal funds, enter your best estimate of net rental cash on hand.
+      </div>
     </div>
     <div id="rentalList"></div>
     <button onclick="addRentalProperty()" style="
@@ -861,8 +921,14 @@ Source: SeekersGuidance
 (Hanafi)</span>
       </div>
     </div>
-    <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:10px; line-height:1.6;">
-      Only <strong style="color:rgba(212,180,99,0.7);">current/liquid assets</strong> are zakatable. Fixed assets used to run the business are not.
+    <!-- Short always-visible summary + collapsible detail -->
+    <button class="collapsible-toggle" onclick="toggleCollapsible('bizDetail', this)">
+      <span class="chevron">▶</span> Only <strong style="color:rgba(212,180,99,0.7);">current/liquid assets</strong> are zakatable — tap for guidance
+    </button>
+    <div class="collapsible-content" id="bizDetail">
+      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:4px; line-height:1.7; padding: 6px 0;">
+        Cash, inventory, and receivables are zakatable. Fixed assets used to run the business — equipment, vehicles, property, furniture, software — are <strong style="color:rgba(212,180,99,0.7);">not zakatable</strong>. Enter the full business values below; your ownership percentage will be applied automatically if you're a partial owner.
+      </div>
     </div>
 
     <!-- Ownership toggle -->
@@ -978,8 +1044,13 @@ Source: SeekersGuidance
 (Hanafi)</span>
       </div>
     </div>
-    <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:14px; line-height:1.6;">
-      Money lent to family, friends, or others is still considered <strong style="color:rgba(212,180,99,0.7);">your zakatable wealth</strong> — it belongs to you regardless of who is holding it. Classify each loan based on the borrower's situation.
+    <button class="collapsible-toggle" onclick="toggleCollapsible('loanDetail', this)">
+      <span class="chevron">▶</span> Money lent out is still <strong style="color:rgba(212,180,99,0.7);">your zakatable wealth</strong> — tap to understand strong vs weak debt.
+    </button>
+    <div class="collapsible-content" id="loanDetail">
+      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:14px; line-height:1.7; padding: 6px 0;">
+        Money lent to family, friends, or others belongs to you regardless of who is holding it. <strong style="color:rgba(212,180,99,0.7);">Strong debt:</strong> borrower acknowledges and can repay — zakatable now, you may defer payment until received. <strong style="color:rgba(212,180,99,0.7);">Weak debt:</strong> borrower is disputing, unable, or unresponsive — excluded until received, then back-zakat is owed for all prior years.
+      </div>
     </div>
     <div id="loanList"></div>
     <button onclick="addLoan()" style="
@@ -1018,8 +1089,13 @@ Source: SeekersGuidance
       </div>
     </div>
 
-    <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:14px; line-height:1.7;">
-      Each item below is deducted from your total zakatable wealth before 2.5% is applied. Only include <strong style="color:rgba(212,180,99,0.7);">personal debts currently due</strong> — business debts are handled in the Business Assets section above.
+    <button class="collapsible-toggle" onclick="toggleCollapsible('liabDetail', this)">
+      <span class="chevron">▶</span> Personal debts are deducted from your zakatable total before 2.5% is applied. Tap for guidance.
+    </button>
+    <div class="collapsible-content" id="liabDetail">
+      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:14px; line-height:1.7; padding: 6px 0;">
+        Only include <strong style="color:rgba(212,180,99,0.7);">personal debts currently due</strong> — business debts are handled in the Business Assets section above. Long-term debts like mortgages: deduct only the next single principal payment (not the full balance).
+      </div>
     </div>
 
     <!-- Credit Cards -->
@@ -1137,6 +1213,12 @@ Source: SeekersGuidance
     </div>
     <p class="result-msg" id="resultMsg"></p>
   </div>
+
+  <!-- Sticky Calculate Button — always visible at bottom of screen -->
+  <!-- This replaces the inline button which is now hidden via CSS -->
+  <button class="sticky-calc-btn" onclick="showResults()">
+    CALCULATE ZAKAT
+  </button>
 
   <p class="footer-note">
     Gold & silver prices are approximate — verify current market rates before calculating.<br/>
@@ -1907,8 +1989,24 @@ Source: SeekersGuidance
   let taxMode = 'return'; // 'return' or 'estimate'
   let computed401kZakatable = 0;
 
+  // ============================================================
+  // TAX BRACKETS
+  // Loaded from taxes.js — edit that file to update each year
+  // ============================================================
   // Tax brackets loaded from taxes.js (TAX_YEAR: 2025)
   // To update: edit taxes.js — no changes needed here
+
+  // ============================================================
+  // COLLAPSIBLE SECTIONS
+  // Toggles the open/closed state of explanatory text blocks.
+  // Each collapsible has an id (e.g. 'bizDetail') and a button.
+  // ============================================================
+  function toggleCollapsible(id, btn) {
+    const content = document.getElementById(id);
+    const isOpen = content.classList.contains('open');
+    content.classList.toggle('open', !isOpen);
+    btn.classList.toggle('open', !isOpen);
+  }
 
   function calcTaxFromBrackets(income, brackets) {
     let tax = 0, prev = 0;
