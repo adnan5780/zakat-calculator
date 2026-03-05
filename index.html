@@ -1311,22 +1311,57 @@ Source: SeekersGuidance
 
   <!-- Results -->
   <div class="result-box" id="resultBox">
+
+    <!-- ── Big number at the top ── -->
     <div class="result-emoji" id="resultEmoji">🌙</div>
     <div class="result-label" id="resultLabel">ZAKAT DUE</div>
     <div class="result-amount" id="resultAmount">$0.00</div>
-    <div class="breakdown-section-title">BREAKDOWN BY CATEGORY</div>
+
+    <!-- ── Reconciliation table: assets → liabilities → net → zakat ── -->
+    <!-- This is the primary breakdown that ties back to the final number -->
+    <div class="breakdown-section-title" style="margin-top:22px;">CALCULATION SUMMARY</div>
     <table class="breakdown-table" id="breakdownTable">
       <tbody id="breakdownBody"></tbody>
     </table>
 
+    <!-- ── Weak loan advisory (shown only if weak debts exist) ── -->
     <div id="weakLoanAdvisory" style="display:none; margin:0 0 14px; padding:12px 16px; background:rgba(255,180,50,0.05); border:1px solid rgba(255,180,50,0.2); border-radius:12px; font-size:0.75rem; color:rgba(255,180,50,0.65); line-height:1.8;"></div>
 
+    <!-- ── Summary stat grid ── -->
     <div class="result-grid">
       <div class="result-cell"><div class="result-cell-label">Total Zakatable Assets</div><div class="result-cell-value" id="rTotalAssets">$0.00</div></div>
       <div class="result-cell"><div class="result-cell-label">Net Zakatable Wealth</div><div class="result-cell-value" id="rNetWorth">$0.00</div></div>
       <div class="result-cell"><div class="result-cell-label">Nisab Threshold</div><div class="result-cell-value" id="rNisab">$0.00</div></div>
       <div class="result-cell highlight"><div class="result-cell-label">Zakat Rate</div><div class="result-cell-value highlight">2.5%</div></div>
     </div>
+
+    <!-- ── Collapsible itemized breakdown by category ── -->
+    <!-- Shows per-category zakatable amounts and hypothetical zakat per category.
+         Disclaimer clarifies these are pre-liability figures that don't sum to final zakat due. -->
+    <div id="itemizedSection" style="margin-top:18px;">
+      <button class="collapsible-toggle" onclick="toggleCollapsible('itemizedBody', this)"
+        style="width:100%; justify-content:space-between; padding:10px 14px;
+          background:rgba(212,180,99,0.04); border:1px solid rgba(212,180,99,0.15);
+          border-radius:10px; margin-bottom:0;">
+        <span style="display:flex; align-items:center; gap:6px;">
+          <span class="chevron">▶</span>
+          <span style="font-family:'Cormorant Garamond',serif; font-size:0.9rem; color:rgba(212,180,99,0.7);">View Itemized Breakdown by Category</span>
+        </span>
+        <span style="font-size:0.68rem; color:rgba(212,180,99,0.35);">pre-liability</span>
+      </button>
+      <div class="collapsible-content" id="itemizedBody"
+        style="background:rgba(212,180,99,0.02); border:1px solid rgba(212,180,99,0.1);
+          border-top:none; border-radius:0 0 10px 10px; padding:0 14px;">
+        <!-- Disclaimer -->
+        <div style="font-size:0.7rem; color:rgba(212,180,99,0.3); padding:10px 0 6px; line-height:1.7; border-bottom:1px solid rgba(212,180,99,0.08);">
+          ⚠ The zakat amounts below are calculated per category <strong style="color:rgba(212,180,99,0.45);">before liabilities are deducted</strong> and will not sum to your final zakat due. They are provided for reference only.
+        </div>
+        <table class="breakdown-table" id="itemizedTable" style="margin:8px 0;">
+          <tbody id="itemizedBody2"></tbody>
+        </table>
+      </div>
+    </div>
+
     <p class="result-msg" id="resultMsg"></p>
   </div>
 
@@ -1616,22 +1651,51 @@ Source: SeekersGuidance
     const thisYearZakat = eligible ? netWorth * ZAKAT_RATE : 0;
     const zakatDue = thisYearZakat + priorZakatAmount;
 
-    // Build breakdown table — only show categories with a value
+    // ── TABLE 1: Calculation Summary ──────────────────────────────
+    // This table shows the reconciliation that ties back to the final number:
+    // Total Assets → Liabilities deducted → Net Wealth → Zakat Due
     const tbody = document.getElementById('breakdownBody');
     tbody.innerHTML = '';
-    categories.forEach(c => {
-      if (c.zakatable <= 0) return;
-      const zakatAmt = c.zakatable * ZAKAT_RATE;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="bt-label">${c.label}</td>
-        <td style="text-align:right; color:rgba(240,230,200,0.35); font-size:0.78rem; padding-right:8px">${fmt(c.zakatable)} zakatable</td>
-        <td>${fmt(zakatAmt)}</td>
-      `;
-      tbody.appendChild(tr);
-    });
 
-    // This year subtotal
+    // Total zakatable assets row
+    const assetsTr = document.createElement('tr');
+    assetsTr.innerHTML = `
+      <td class="bt-label">Total Zakatable Assets</td>
+      <td></td>
+      <td>${fmt(totalAssets)}</td>
+    `;
+    tbody.appendChild(assetsTr);
+
+    // Liabilities deduction row (only if liabilities exist)
+    if (liabilities > 0) {
+      const liabTr = document.createElement('tr');
+      liabTr.innerHTML = `
+        <td class="bt-label" style="color:rgba(255,120,120,0.65);">Personal Liabilities</td>
+        <td style="text-align:right; color:rgba(255,120,120,0.4); font-size:0.75rem; padding-right:8px;">deducted</td>
+        <td style="color:rgba(255,120,120,0.7);">− ${fmt(liabilities)}</td>
+      `;
+      tbody.appendChild(liabTr);
+    }
+
+    // Net zakatable wealth row
+    const netTr = document.createElement('tr');
+    netTr.innerHTML = `
+      <td class="bt-label" style="padding-top:6px;">Net Zakatable Wealth</td>
+      <td></td>
+      <td style="padding-top:6px; border-top:1px solid rgba(212,180,99,0.15);">${fmt(netWorth)}</td>
+    `;
+    tbody.appendChild(netTr);
+
+    // Zakat rate row
+    const rateTr = document.createElement('tr');
+    rateTr.innerHTML = `
+      <td class="bt-label" style="color:rgba(212,180,99,0.4); font-size:0.75rem;">Zakat Rate</td>
+      <td></td>
+      <td style="color:rgba(212,180,99,0.4); font-size:0.8rem;">× 2.5%</td>
+    `;
+    tbody.appendChild(rateTr);
+
+    // This year's zakat total
     const thisYearTr = document.createElement('tr');
     thisYearTr.className = 'bt-total';
     thisYearTr.innerHTML = `
@@ -1641,14 +1705,13 @@ Source: SeekersGuidance
     `;
     tbody.appendChild(thisYearTr);
 
-    // Prior year unpaid zakat row (only if applicable)
+    // Prior year unpaid zakat (only if applicable)
     if (priorZakatAmount > 0) {
       const priorTr = document.createElement('tr');
-      priorTr.style.cssText = 'color:rgba(212,180,99,0.6);';
       priorTr.innerHTML = `
-        <td style="padding-top:6px; font-size:0.8rem;">Prior Year Unpaid Zakat</td>
+        <td style="padding-top:6px; font-size:0.8rem; color:rgba(212,180,99,0.6);">Prior Year Unpaid Zakat</td>
         <td></td>
-        <td style="padding-top:6px;">${fmt(priorZakatAmount)}</td>
+        <td style="padding-top:6px; color:rgba(212,180,99,0.6);">${fmt(priorZakatAmount)}</td>
       `;
       tbody.appendChild(priorTr);
 
@@ -1661,6 +1724,27 @@ Source: SeekersGuidance
       `;
       tbody.appendChild(combinedTr);
     }
+
+    // ── TABLE 2: Itemized Breakdown by Category ────────────────────
+    // Pre-liability per-category amounts — for reference only.
+    // These will NOT sum to the final zakat due when liabilities exist.
+    const tbody2 = document.getElementById('itemizedBody2');
+    tbody2.innerHTML = '';
+    categories.forEach(c => {
+      if (c.zakatable <= 0) return;
+      const zakatAmt = c.zakatable * ZAKAT_RATE;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="bt-label">${c.label}</td>
+        <td style="text-align:right; color:rgba(240,230,200,0.3); font-size:0.75rem; padding-right:8px;">${fmt(c.zakatable)} zakatable</td>
+        <td>${fmt(zakatAmt)}</td>
+      `;
+      tbody2.appendChild(tr);
+    });
+
+    // Hide the itemized section entirely if no categories have values
+    const hasCategories = categories.some(c => c.zakatable > 0);
+    document.getElementById('itemizedSection').style.display = hasCategories ? 'block' : 'none';
 
     const box = document.getElementById('resultBox');
     box.style.display = 'block';
