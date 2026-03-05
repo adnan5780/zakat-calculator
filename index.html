@@ -310,6 +310,86 @@
       letter-spacing: 0.1em; margin-bottom: 4px; margin-top: 18px;
       text-align: center;
     }
+    /* ── Mobile responsiveness ── */
+    /* These styles apply on small screens (phones) only */
+    @media (max-width: 480px) {
+
+      /* Reduce body padding on small screens */
+      body { padding: 20px 12px; }
+
+      /* Smaller header */
+      .header h1 { font-size: 2rem; }
+
+      /* Card padding tighter */
+      .card { padding: 14px 14px; }
+
+      /* Input rows: stack label above input on very small screens */
+      .input-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px 0;
+      }
+      .input-right {
+        width: 100%;
+        justify-content: flex-end;
+      }
+      input[type=number] {
+        width: 100%;
+        text-align: right;
+      }
+
+      /* Ticker rows: make inputs full width */
+      .ticker-input { width: 100% !important; }
+      .ticker-shares { width: 80px !important; }
+
+      /* Result grid: single column on mobile */
+      .result-grid { grid-template-columns: 1fr; }
+
+      /* Sticky button: tighter on mobile */
+      .sticky-calc-btn {
+        width: calc(100% - 24px);
+        bottom: 16px;
+        font-size: 0.95rem;
+        padding: 13px;
+      }
+
+      /* Breakdown table: smaller font */
+      .breakdown-table td { font-size: 0.74rem; padding: 6px 2px; }
+
+      /* Toggle buttons: smaller text */
+      .toggle-btn { font-size: 0.82rem; padding: 8px 0; }
+
+      /* Section group header label */
+      .section-group-header .group-label { font-size: 0.65rem; }
+
+      /* Gold input right: wrap on mobile */
+      .gold-price-row { flex-wrap: wrap; gap: 8px; }
+      .gold-input-right { width: 100%; justify-content: flex-end; }
+    }
+
+    /* ── Section group headers ── */
+    /* These visually separate the calculator into logical groups */
+    .section-group-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 28px 0 12px;
+    }
+    .section-group-header .group-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.72rem;
+      color: rgba(212,180,99,0.35);
+      letter-spacing: 0.18em;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+    .section-group-header .group-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(212,180,99,0.2), transparent);
+    }
+
     .footer-note {
       text-align: center; font-size: 0.72rem;
       color: rgba(240,230,200,0.22); margin-top: 22px; line-height: 1.7;
@@ -387,6 +467,12 @@ using the gold standard.</span>
       <button class="toggle-btn active" id="btn-gold" onclick="setNisab('gold')">🥇 Gold (85g)</button>
       <button class="toggle-btn" id="btn-silver" onclick="setNisab('silver')">🥈 Silver (595g)</button>
     </div>
+  </div>
+
+  <!-- ── GROUP: PERSONAL ASSETS ─────────────────────────── -->
+  <div class="section-group-header">
+    <span class="group-label">Personal Assets</span>
+    <span class="group-line"></span>
   </div>
 
   <!-- Precious Metals -->
@@ -820,6 +906,12 @@ Per Fiqh Council of North America.</span>
     </div>
   </div>
 
+  <!-- ── GROUP: REAL ESTATE & BUSINESS ──────────────────── -->
+  <div class="section-group-header">
+    <span class="group-label">Real Estate &amp; Business</span>
+    <span class="group-line"></span>
+  </div>
+
   <!-- Real Estate - Flipping -->
   <div class="card">
     <div class="card-header">
@@ -1064,6 +1156,12 @@ Source: SeekersGuidance
       + Add Loan
     </button>
     <div id="loanSummary" style="display:none; margin-top:12px;"></div>
+  </div>
+
+  <!-- ── GROUP: DEDUCTIONS ───────────────────────────────── -->
+  <div class="section-group-header">
+    <span class="group-label">Deductions</span>
+    <span class="group-line"></span>
   </div>
 
   <!-- Liabilities -->
