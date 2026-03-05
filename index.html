@@ -383,17 +383,19 @@
     .section-group-header:hover .section-group-title {
       opacity: 0.8;
     }
-    /* Collapse chevron on section group headers */
+    /* ▼/+ on section group headers — left of title, bold, easy to see */
     .section-group-chevron {
       display: inline-block;
-      font-size: 0.8rem;
-      color: rgba(212,180,99,0.4);
-      margin-left: 8px;
-      transition: transform 0.3s ease;
+      font-size: 1.0rem;
+      font-weight: 900;
+      color: rgba(212,180,99,0.6);
+      margin-right: 12px;
       vertical-align: middle;
+      transition: color 0.2s;
+      line-height: 1;
     }
-    .section-group-header.collapsed .section-group-chevron {
-      transform: rotate(-90deg);
+    .section-group-header:hover .section-group-chevron {
+      color: rgba(212,180,99,0.95);
     }
     /* Group body — the cards inside each section */
     .section-group-body {
@@ -550,7 +552,7 @@ using the gold standard.</span>
   <!-- ── GROUP 1: PERSONAL ASSETS ───────────────────────── -->
   <div class="section-group-header" data-group="personal-assets" onclick="toggleGroup('group-personal')">
     <span class="section-group-icon">💼</span>
-    <span class="section-group-title">Personal Assets <span class="section-group-chevron">▼</span><span class="section-group-check">✓</span></span>
+    <span class="section-group-title"><span class="section-group-chevron" id="chevron-personal">▼</span>Personal Assets <span class="section-group-check">✓</span></span>
     <span class="section-group-subtitle">Gold &amp; silver, cash, crypto, stocks, and retirement accounts</span>
   </div>
   <div class="section-group-body" id="group-personal">
@@ -991,7 +993,7 @@ Per Fiqh Council of North America.</span>
   <!-- ── GROUP 2: REAL ESTATE & BUSINESS ────────────────── -->
   <div class="section-group-header" data-group="real-estate-business" onclick="toggleGroup('group-rebiz')">
     <span class="section-group-icon">🏢</span>
-    <span class="section-group-title">Real Estate &amp; Business <span class="section-group-chevron">▼</span><span class="section-group-check">✓</span></span>
+    <span class="section-group-title"><span class="section-group-chevron" id="chevron-rebiz">▼</span>Real Estate &amp; Business <span class="section-group-check">✓</span></span>
     <span class="section-group-subtitle">Flipping properties, rental income, business assets, partnerships, and money lent to others</span>
   </div>
   <div class="section-group-body" id="group-rebiz">
@@ -1244,7 +1246,7 @@ Source: SeekersGuidance
   <!-- ── GROUP 3: DEDUCTIONS ─────────────────────────────── -->
   <div class="section-group-header" data-group="deductions" onclick="toggleGroup('group-deductions')">
     <span class="section-group-icon">📉</span>
-    <span class="section-group-title">Deductions <span class="section-group-chevron">▼</span><span class="section-group-check">✓</span></span>
+    <span class="section-group-title"><span class="section-group-chevron" id="chevron-deductions">▼</span>Deductions <span class="section-group-check">✓</span></span>
     <span class="section-group-subtitle">Personal debts currently due — deducted from your zakatable total before zakat is calculated</span>
   </div>
   <div class="section-group-body" id="group-deductions">
@@ -2386,14 +2388,21 @@ Source: SeekersGuidance
   }
 
   // toggleGroup — for collapsing entire section groups (Personal Assets, RE&Biz, Deductions)
-  // The header itself is the toggle button; the body div slides up/down
+  // Slides cards up/down and swaps the +/- icon on the header
   function toggleGroup(bodyId) {
     const body = document.getElementById(bodyId);
     const isCollapsed = body.classList.contains('collapsed');
-    // Find the header (previous sibling of the body)
     const header = body.previousElementSibling;
     body.classList.toggle('collapsed', !isCollapsed);
     if (header) header.classList.toggle('collapsed', !isCollapsed);
+    // Swap − to + when collapsing, + to − when expanding
+    const chevronMap = {
+      'group-personal':    'chevron-personal',
+      'group-rebiz':       'chevron-rebiz',
+      'group-deductions':  'chevron-deductions'
+    };
+    const chevronEl = document.getElementById(chevronMap[bodyId]);
+    if (chevronEl) chevronEl.textContent = isCollapsed ? '▼' : '+';
   }
 
   function calcTaxFromBrackets(income, brackets) {
