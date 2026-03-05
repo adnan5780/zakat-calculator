@@ -954,6 +954,47 @@ Source: SeekersGuidance
     </div>
   </div>
 
+  <!-- Money Lent to Others -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🤝</span>
+      <span class="card-title">Money Lent to Others</span>
+      <div class="tooltip-wrap">
+        <span class="tooltip-icon">i</span>
+        <span class="tooltip-box">Money you've lent out is
+still your wealth in the
+Hanafi school.
+
+Strong debt: borrower
+acknowledges & can repay —
+zakatable annually.
+
+Weak debt: borrower disputing,
+unable, or unresponsive —
+not zakatable until received,
+then back-zakat is owed.
+
+Source: SeekersGuidance
+(Hanafi)</span>
+      </div>
+    </div>
+    <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:14px; line-height:1.6;">
+      Money lent to family, friends, or others is still considered <strong style="color:rgba(212,180,99,0.7);">your zakatable wealth</strong> — it belongs to you regardless of who is holding it. Classify each loan based on the borrower's situation.
+    </div>
+    <div id="loanList"></div>
+    <button onclick="addLoan()" style="
+      width:100%; margin-top:6px; padding:9px;
+      background:transparent; border:1px dashed rgba(212,180,99,0.25);
+      border-radius:10px; color:rgba(212,180,99,0.55);
+      font-family:'Cormorant Garamond',serif; font-size:0.9rem;
+      cursor:pointer; transition:all 0.2s;"
+      onmouseover="this.style.borderColor='rgba(212,180,99,0.6)';this.style.color='#d4b463'"
+      onmouseout="this.style.borderColor='rgba(212,180,99,0.25)';this.style.color='rgba(212,180,99,0.55)'">
+      + Add Loan
+    </button>
+    <div id="loanSummary" style="display:none; margin-top:12px;"></div>
+  </div>
+
   <!-- Liabilities -->
   <div class="card">
     <div class="card-header">
@@ -1085,6 +1126,8 @@ Source: SeekersGuidance
     <table class="breakdown-table" id="breakdownTable">
       <tbody id="breakdownBody"></tbody>
     </table>
+
+    <div id="weakLoanAdvisory" style="display:none; margin:0 0 14px; padding:12px 16px; background:rgba(255,180,50,0.05); border:1px solid rgba(255,180,50,0.2); border-radius:12px; font-size:0.75rem; color:rgba(255,180,50,0.65); line-height:1.8;"></div>
 
     <div class="result-grid">
       <div class="result-cell"><div class="result-cell-label">Total Zakatable Assets</div><div class="result-cell-value" id="rTotalAssets">$0.00</div></div>
@@ -1349,6 +1392,8 @@ Source: SeekersGuidance
     const flipZakatable = getFlipTotal();
     const rentalZakatable = getRentalTotal();
     const cryptoZakatable = getCryptoTotal();
+    const strongLoanZakatable = getStrongLoanTotal();
+    const weakLoanTotal = getWeakLoanTotal();
     const businessNetZakatable = getBusinessNetZakatable();
     const priorZakatAmount = getPriorZakat();
     updateBusinessNote();
@@ -1373,6 +1418,7 @@ Source: SeekersGuidance
       { label: 'Property (Flipping)',   zakatable: flipZakatable },
       { label: 'Rental Income',         zakatable: rentalZakatable },
       { label: 'Business Assets',       zakatable: businessNetZakatable },
+      { label: 'Money Lent (Strong)',    zakatable: strongLoanZakatable },
     ];
 
     const totalAssets = categories.reduce((s, c) => s + c.zakatable, 0);
@@ -1433,6 +1479,15 @@ Source: SeekersGuidance
     box.className = 'result-box' + (eligible ? ' eligible' : '');
 
     document.getElementById('resultEmoji').textContent = eligible ? '🌙' : 'ℹ️';
+
+    // Weak loan advisory
+    const advisoryEl = document.getElementById('weakLoanAdvisory');
+    if (weakLoanTotal > 0) {
+      advisoryEl.style.display = 'block';
+      advisoryEl.innerHTML = `⚠️ <strong style="color:rgba(255,180,50,0.85);">Weak Debt Notice:</strong> You have ${fmt(weakLoanTotal)} in weak debts that are excluded from this calculation. Once repaid, you will owe back-zakat for each year they were outstanding. Consult a scholar to calculate the accumulated amount.`;
+    } else {
+      advisoryEl.style.display = 'none';
+    }
 
     const amountEl = document.getElementById('resultAmount');
     amountEl.textContent = fmt(zakatDue);
@@ -1961,6 +2016,121 @@ Source: SeekersGuidance
 
     linesEl.innerHTML = lines;
     breakdown.style.display = 'block';
+  }
+
+  // --- Money Lent to Others ---
+  let loanCount = 0;
+  let loanData = {}; // { id: { label, amount, type: 'strong'|'weak' } }
+
+  function addLoan() {
+    loanCount++;
+    const id = loanCount;
+    loanData[id] = { label: '', amount: 0, type: 'strong' };
+    const div = document.createElement('div');
+    div.className = 'ticker-row';
+    div.id = `loan-${id}`;
+    div.innerHTML = `
+      <div class="ticker-top">
+        <input class="ticker-input" style="flex:1;" type="text" placeholder="e.g. Loan to brother, Friend Ahmed"
+          id="loan-label-${id}" oninput="loanData[${id}].label = this.value;" />
+        <button class="ticker-remove" onclick="removeLoan(${id})">×</button>
+      </div>
+      <div class="input-row" style="margin-top:8px;">
+        <div><div class="input-label">Amount</div></div>
+        <div class="input-right">
+          <span class="input-prefix">$</span>
+          <input class="ticker-input" style="width:130px; text-align:right;" type="number" placeholder="0" min="0"
+            id="loan-amount-${id}"
+            oninput="loanData[${id}].amount = parseFloat(this.value)||0; updateLoanSummary();"
+            onfocus="if(this.value==='0') this.value='';"
+            onblur="if(this.value==='') this.value='0';" />
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button id="loan-strong-${id}" onclick="setLoanType(${id},'strong')" style="
+          flex:1; padding:8px 6px; border-radius:10px;
+          border:1px solid #d4b463; background:rgba(212,180,99,0.15);
+          color:#d4b463; cursor:pointer; transition:all 0.2s;
+          font-family:'Cormorant Garamond',serif; font-size:0.8rem; line-height:1.4;">
+          💚 Strong Debt<br/><span style="font-size:0.7rem; opacity:0.7;">Borrower can & will repay</span>
+        </button>
+        <button id="loan-weak-${id}" onclick="setLoanType(${id},'weak')" style="
+          flex:1; padding:8px 6px; border-radius:10px;
+          border:1px solid rgba(212,180,99,0.2); background:transparent;
+          color:rgba(240,230,200,0.4); cursor:pointer; transition:all 0.2s;
+          font-family:'Cormorant Garamond',serif; font-size:0.8rem; line-height:1.4;">
+          ⚠️ Weak Debt<br/><span style="font-size:0.7rem; opacity:0.7;">Disputed, unable, or unresponsive</span>
+        </button>
+      </div>
+      <div id="loan-note-${id}" style="font-size:0.7rem; color:rgba(212,180,99,0.35); margin-top:8px; line-height:1.7;">
+        Zakat is due annually on this amount. You may defer payment until the loan is repaid, but the obligation accumulates each year.
+      </div>
+    `;
+    document.getElementById('loanList').appendChild(div);
+    updateLoanSummary();
+  }
+
+  function removeLoan(id) {
+    delete loanData[id];
+    const el = document.getElementById(`loan-${id}`);
+    if (el) el.remove();
+    updateLoanSummary();
+  }
+
+  function setLoanType(id, type) {
+    loanData[id].type = type;
+    const strongBtn = document.getElementById(`loan-strong-${id}`);
+    const weakBtn = document.getElementById(`loan-weak-${id}`);
+    const noteEl = document.getElementById(`loan-note-${id}`);
+    const amountEl = document.getElementById(`loan-amount-${id}`);
+
+    if (type === 'strong') {
+      strongBtn.style.border = '1px solid #d4b463'; strongBtn.style.background = 'rgba(212,180,99,0.15)'; strongBtn.style.color = '#d4b463';
+      weakBtn.style.border = '1px solid rgba(212,180,99,0.2)'; weakBtn.style.background = 'transparent'; weakBtn.style.color = 'rgba(240,230,200,0.4)';
+      amountEl.style.opacity = '1';
+      noteEl.style.color = 'rgba(212,180,99,0.35)';
+      noteEl.textContent = 'Zakat is due annually on this amount. You may defer payment until the loan is repaid, but the obligation accumulates each year.';
+    } else {
+      weakBtn.style.border = '1px solid rgba(255,180,50,0.6)'; weakBtn.style.background = 'rgba(255,180,50,0.08)'; weakBtn.style.color = 'rgba(255,180,50,0.8)';
+      strongBtn.style.border = '1px solid rgba(212,180,99,0.2)'; strongBtn.style.background = 'transparent'; strongBtn.style.color = 'rgba(240,230,200,0.4)';
+      amountEl.style.opacity = '0.4';
+      noteEl.style.color = 'rgba(255,180,50,0.5)';
+      noteEl.textContent = 'Not zakatable until received. Once repaid, back-zakat will be owed for each year it was outstanding — consult a scholar to calculate the accumulated amount.';
+    }
+    updateLoanSummary();
+  }
+
+  function updateLoanSummary() {
+    const loans = Object.values(loanData);
+    const strongTotal = loans.filter(l => l.type === 'strong').reduce((s, l) => s + (l.amount || 0), 0);
+    const weakTotal = loans.filter(l => l.type === 'weak').reduce((s, l) => s + (l.amount || 0), 0);
+    const el = document.getElementById('loanSummary');
+    if (loans.length === 0 || (strongTotal === 0 && weakTotal === 0)) {
+      el.style.display = 'none';
+      return;
+    }
+    el.style.display = 'block';
+    let html = '';
+    if (strongTotal > 0) {
+      html += `<div style="font-size:0.78rem; color:rgba(212,180,99,0.55); line-height:1.9;">
+        💚 Strong debts zakatable: <span style="color:rgba(212,180,99,0.85); font-weight:600;">${fmt(strongTotal)}</span>
+      </div>`;
+    }
+    if (weakTotal > 0) {
+      html += `<div style="font-size:0.78rem; color:rgba(255,180,50,0.55); line-height:1.9;">
+        ⚠️ Weak debts (excluded): <span style="color:rgba(255,180,50,0.7); font-weight:600;">${fmt(weakTotal)}</span>
+        <span style="font-size:0.68rem; opacity:0.7;"> — back-zakat owed when received</span>
+      </div>`;
+    }
+    el.innerHTML = html;
+  }
+
+  function getStrongLoanTotal() {
+    return Object.values(loanData).filter(l => l.type === 'strong').reduce((s, l) => s + (l.amount || 0), 0);
+  }
+
+  function getWeakLoanTotal() {
+    return Object.values(loanData).filter(l => l.type === 'weak').reduce((s, l) => s + (l.amount || 0), 0);
   }
 
   async function importLivePrices() {
