@@ -1556,23 +1556,13 @@ Source: SeekersGuidance
     });
   }
 
+  // calculate() is called before showResults() to trigger any live updates.
+  // The 401k smart tax breakdown is handled by compute401kTax() separately.
+  // This function just ensures derived fields are current before results render.
   function calculate() {
-    if (current401kMethod === 2) {
-      const balance401k = val('balance401k');
-      const taxRate = val('taxRate401k');
-      const penalty = balance401k * EARLY_WITHDRAWAL_PENALTY;
-      const taxDed = balance401k * (taxRate / 100);
-      const net401k = Math.max(0, balance401k - penalty - taxDed);
-      const breakdown = document.getElementById('breakdownBox');
-      if (balance401k > 0) {
-        breakdown.style.display = 'block';
-        document.getElementById('penaltyLine').textContent = `Early withdrawal penalty (10%): −${fmt(penalty)}`;
-        document.getElementById('taxLine').textContent = `Estimated taxes (${taxRate}%): −${fmt(taxDed)}`;
-        document.getElementById('netLine').textContent = `Net zakatable amount: ${fmt(net401k)}`;
-      } else {
-        breakdown.style.display = 'none';
-      }
-    }
+    updateBusinessNote();
+    updateLoanSummary();
+    compute401kTax();
   }
 
   function showResults() {
