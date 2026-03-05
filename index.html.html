@@ -307,6 +307,17 @@
     <div class="divider"></div>
   </div>
 
+  <!-- Intro Banner -->
+  <div style="max-width:620px; margin: 0 auto 24px; background:rgba(212,180,99,0.05); border:1px solid rgba(212,180,99,0.2); border-radius:14px; padding:16px 22px;">
+    <div style="font-family:'Cormorant Garamond',serif; font-size:0.85rem; color:rgba(212,180,99,0.6); letter-spacing:0.08em; margin-bottom:10px;">ABOUT THIS CALCULATOR</div>
+    <div style="font-size:0.76rem; color:rgba(240,230,200,0.5); line-height:2;">
+      <div>🕌 &nbsp;Follows the <strong style="color:rgba(212,180,99,0.7);">Hanafi school of thought</strong></div>
+      <div>📖 &nbsp;Based on rulings from the <strong style="color:rgba(212,180,99,0.7);">Fiqh Council of North America</strong> and <strong style="color:rgba(212,180,99,0.7);">SeekersGuidance</strong></div>
+      <div>🌙 &nbsp;Zakat is calculated on your <strong style="color:rgba(212,180,99,0.7);">lunar year anniversary date</strong> — use an Islamic calendar to set your annual due date consistently</div>
+      <div>🤲 &nbsp;This calculator is a <strong style="color:rgba(212,180,99,0.7);">guide only</strong> — consult a qualified scholar for your specific situation</div>
+    </div>
+  </div>
+
   <!-- Nisab -->
   <div class="card">
     <div class="card-header">
@@ -414,6 +425,46 @@ Balance × 2.5%</span>
         <input type="number" id="cash" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
       </div>
     </div>
+  </div>
+
+  <!-- Cryptocurrency -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">₿</span>
+      <span class="card-title">Cryptocurrency</span>
+      <div class="tooltip-wrap">
+        <span class="tooltip-icon">i</span>
+        <span class="tooltip-box">Crypto is treated as currency
+in the Hanafi school —
+full market value is zakatable
+regardless of intent to hold.
+
+Formula:
+Market value × 2.5%
+
+No tax or penalty deductions.
+
+Source: SeekersGuidance
+(Hanafi)</span>
+      </div>
+    </div>
+    <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.6;">
+      Cryptocurrencies like Bitcoin and Ethereum are treated as <strong style="color:rgba(212,180,99,0.7);">currency</strong> — the full market value on your zakat date is zakatable at 2.5%, regardless of whether you intend to hold or sell. No tax or penalty deductions apply since no sale has occurred.
+    </div>
+    <div id="cryptoList"></div>
+    <button onclick="addCrypto()" style="
+      width:100%; margin-top:6px; padding:9px;
+      background:transparent; border:1px dashed rgba(212,180,99,0.25);
+      border-radius:10px; color:rgba(212,180,99,0.55);
+      font-family:'Cormorant Garamond',serif; font-size:0.9rem;
+      cursor:pointer; transition:all 0.2s;"
+      onmouseover="this.style.borderColor='rgba(212,180,99,0.6)';this.style.color='#d4b463'"
+      onmouseout="this.style.borderColor='rgba(212,180,99,0.25)';this.style.color='rgba(212,180,99,0.55)'">
+      + Add Coin
+    </button>
+    <div id="cryptoTotal" style="display:none; margin-top:12px; padding:10px 14px;
+      background:rgba(212,180,99,0.05); border-radius:10px;
+      font-size:0.78rem; color:rgba(212,180,99,0.55); line-height:1.9;"></div>
   </div>
 
   <!-- Stocks -->
@@ -604,7 +655,7 @@ Source: SeekersGuidance
       </div>
     </div>
     <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.6;">
-      Properties purchased with the <strong style="color:rgba(212,180,99,0.7);">firm intention to sell</strong> are treated as trade goods — the full current market value is zakatable at 2.5%. This does not apply to your primary residence or properties held for rental.
+      Only enter properties you <strong style="color:rgba(212,180,99,0.7);">currently own with a firm intention to sell</strong> on your zakat due date — the full current market value is zakatable at 2.5%. If you already sold a property and spent or reinvested the proceeds before your zakat date, do not enter it here. This does not apply to your primary residence or properties held for rental income.
     </div>
     <div id="flipList"></div>
     <button onclick="addFlipProperty()" style="
@@ -700,7 +751,7 @@ Source: SeekersGuidance
     <div class="input-row">
       <div>
         <div class="input-label">Inventory & trade goods</div>
-        <div class="input-sublabel">e.g. products for sale, raw materials, wholesale stock — at current market value</div>
+        <div class="input-sublabel">Use current <strong>market value</strong> — not cost price or retail price. Do not include goods already shipped to customers but not yet paid for.</div>
       </div>
       <div class="input-right">
         <span class="input-prefix">$</span>
@@ -824,6 +875,19 @@ Source: SeekersGuidance
       </div>
     </div>
 
+    <!-- Prior year unpaid zakat -->
+    <div class="sublabel-tag" style="margin-top:10px;">UNPAID ZAKAT FROM PRIOR YEARS</div>
+    <div class="input-row">
+      <div>
+        <div class="input-label">Unpaid zakat from previous years</div>
+        <div class="input-sublabel">If you missed zakat in prior years, that amount is a debt owed to Allah and is deducted from this year's zakatable wealth</div>
+      </div>
+      <div class="input-right">
+        <span class="input-prefix">$</span>
+        <input type="number" id="liab-priorzakat" value="0" min="0" oninput="updateLiabilitiesTotal()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+      </div>
+    </div>
+
     <!-- Catch-all -->
     <div class="sublabel-tag" style="margin-top:10px;">ANY OTHER PERSONAL DEBTS</div>
     <div class="input-row">
@@ -912,6 +976,7 @@ Source: SeekersGuidance
   let current401kMethod = 2;
   let flipCount = 0; let flipData = {};
   let rentalCount = 0; let rentalData = {};
+  let cryptoCount = 0; let cryptoData = {};
 
   const fmt = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(val || 0);
 
@@ -1119,7 +1184,9 @@ Source: SeekersGuidance
     const retirement401kZakatable = get401kZakatable();
     const flipZakatable = getFlipTotal();
     const rentalZakatable = getRentalTotal();
+    const cryptoZakatable = getCryptoTotal();
     const businessNetZakatable = Math.max(0, businessCash + businessInventory + businessReceivables - businessLiabilities);
+    const priorZakatAmount = getPriorZakat();
 
     // Update business note
     const bNote = document.getElementById('businessNote');
@@ -1141,19 +1208,21 @@ Source: SeekersGuidance
       { label: 'Gold',                  zakatable: goldZakatable },
       { label: 'Silver',                zakatable: silverZakatable },
       { label: 'Cash & Savings',        zakatable: cashZakatable },
+      { label: 'Cryptocurrency',        zakatable: cryptoZakatable },
       { label: 'Trading Stocks',        zakatable: tradingZakatable },
       { label: 'Long-term Stocks',      zakatable: longTermZakatableAmt },
       { label: '401(k)',                zakatable: retirement401kZakatable },
-      { label: 'Property (Flipping)',    zakatable: flipZakatable },
+      { label: 'Property (Flipping)',   zakatable: flipZakatable },
       { label: 'Rental Income',         zakatable: rentalZakatable },
       { label: 'Business Assets',       zakatable: businessNetZakatable },
     ];
 
     const totalAssets = categories.reduce((s, c) => s + c.zakatable, 0);
     const netWorth = Math.max(0, totalAssets - liabilities);
+    const thisYearZakat = eligible ? netWorth * ZAKAT_RATE : 0;
     const nisabThreshold = nisabType === 'gold' ? NISAB_GOLD_GRAMS * goldPrice : NISAB_SILVER_GRAMS * silverPrice;
     const eligible = netWorth >= nisabThreshold;
-    const zakatDue = eligible ? netWorth * ZAKAT_RATE : 0;
+    const zakatDue = thisYearZakat + priorZakatAmount;
 
     // Build breakdown table — only show categories with a value
     const tbody = document.getElementById('breakdownBody');
@@ -1170,26 +1239,49 @@ Source: SeekersGuidance
       tbody.appendChild(tr);
     });
 
-    // Totals row
-    const totalTr = document.createElement('tr');
-    totalTr.className = 'bt-total';
-    totalTr.innerHTML = `
-      <td>Total Zakat Due</td>
+    // This year subtotal
+    const thisYearTr = document.createElement('tr');
+    thisYearTr.className = 'bt-total';
+    thisYearTr.innerHTML = `
+      <td>This Year's Zakat</td>
       <td></td>
-      <td>${fmt(zakatDue)}</td>
+      <td>${fmt(thisYearZakat)}</td>
     `;
-    tbody.appendChild(totalTr);
+    tbody.appendChild(thisYearTr);
+
+    // Prior year unpaid zakat row (only if applicable)
+    if (priorZakatAmount > 0) {
+      const priorTr = document.createElement('tr');
+      priorTr.style.cssText = 'color:rgba(212,180,99,0.6);';
+      priorTr.innerHTML = `
+        <td style="padding-top:6px; font-size:0.8rem;">Prior Year Unpaid Zakat</td>
+        <td></td>
+        <td style="padding-top:6px;">${fmt(priorZakatAmount)}</td>
+      `;
+      tbody.appendChild(priorTr);
+
+      const combinedTr = document.createElement('tr');
+      combinedTr.className = 'bt-total';
+      combinedTr.innerHTML = `
+        <td style="color:#d4b463;">Total Owed</td>
+        <td></td>
+        <td style="color:#d4b463;">${fmt(zakatDue)}</td>
+      `;
+      tbody.appendChild(combinedTr);
+    }
 
     const box = document.getElementById('resultBox');
     box.style.display = 'block';
     box.className = 'result-box' + (eligible ? ' eligible' : '');
 
     document.getElementById('resultEmoji').textContent = eligible ? '🌙' : 'ℹ️';
-    document.getElementById('resultLabel').textContent = eligible ? 'ZAKAT DUE' : 'BELOW NISAB THRESHOLD';
 
     const amountEl = document.getElementById('resultAmount');
     amountEl.textContent = fmt(zakatDue);
     amountEl.className = 'result-amount' + (eligible ? ' eligible' : '');
+    document.getElementById('resultLabel').textContent = eligible
+      ? (priorZakatAmount > 0 ? 'TOTAL ZAKAT OWED' : 'ZAKAT DUE')
+      : 'BELOW NISAB THRESHOLD';
 
     document.getElementById('rTotalAssets').textContent = fmt(totalAssets);
     document.getElementById('rNetWorth').textContent = fmt(netWorth);
@@ -1461,8 +1553,9 @@ Source: SeekersGuidance
     const personalLoan = val('liab-personalloan');
     const personal = val('liab-personal');
     const taxes = val('liab-taxes');
+    const priorZakat = val('liab-priorzakat');
     const other = val('liab-other');
-    const total = creditCard + mortgageNext + personalLoan + personal + taxes + other;
+    const total = creditCard + mortgageNext + personalLoan + personal + taxes + priorZakat + other;
 
     // Show mortgage note
     const note = document.getElementById('mortgageNote');
@@ -1490,8 +1583,62 @@ Source: SeekersGuidance
     const personalLoan = val('liab-personalloan');
     const personal = val('liab-personal');
     const taxes = val('liab-taxes');
+    const priorZakat = val('liab-priorzakat');
     const other = val('liab-other');
-    return creditCard + mortgageNext + personalLoan + personal + taxes + other;
+    return creditCard + mortgageNext + personalLoan + personal + taxes + priorZakat + other;
+  }
+
+  function getPriorZakat() {
+    return val('liab-priorzakat');
+  }
+
+  // --- Cryptocurrency ---
+  function addCrypto() {
+    cryptoCount++;
+    const id = cryptoCount;
+    cryptoData[id] = { label: '', value: 0 };
+    const div = document.createElement('div');
+    div.className = 'ticker-row';
+    div.id = `crypto-${id}`;
+    div.innerHTML = `
+      <div class="ticker-top">
+        <input class="ticker-input" style="flex:1;" type="text" placeholder="Coin name (e.g. Bitcoin, Ethereum)"
+          id="crypto-label-${id}" oninput="cryptoData[${id}].label = this.value;" />
+        <button class="ticker-remove" onclick="removeCrypto(${id})">×</button>
+      </div>
+      <div class="input-row" style="margin-top:8px;">
+        <div><div class="input-label">Current market value</div></div>
+        <div class="input-right">
+          <span class="input-prefix">$</span>
+          <input class="ticker-input" style="width:130px; text-align:right;" type="number" placeholder="0" min="0"
+            id="crypto-value-${id}"
+            oninput="cryptoData[${id}].value = parseFloat(this.value)||0; updateCryptoTotal();"
+            onfocus="if(this.value==='0') this.value='';"
+            onblur="if(this.value==='') this.value='0';" />
+        </div>
+      </div>
+    `;
+    document.getElementById('cryptoList').appendChild(div);
+  }
+
+  function removeCrypto(id) {
+    delete cryptoData[id];
+    const el = document.getElementById(`crypto-${id}`);
+    if (el) el.remove();
+    updateCryptoTotal();
+  }
+
+  function updateCryptoTotal() {
+    const total = Object.values(cryptoData).reduce((s, c) => s + (c.value || 0), 0);
+    const el = document.getElementById('cryptoTotal');
+    if (total > 0) {
+      el.style.display = 'block';
+      el.innerHTML = `Total zakatable (crypto): <span style="color:rgba(212,180,99,0.85); font-weight:600;">${fmt(total)}</span>`;
+    } else { el.style.display = 'none'; }
+  }
+
+  function getCryptoTotal() {
+    return Object.values(cryptoData).reduce((s, c) => s + (c.value || 0), 0);
   }
 
   async function importLivePrices() {
