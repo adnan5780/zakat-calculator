@@ -470,19 +470,24 @@
 
     /* Collapsible sections — for long explanatory text blocks */
     .collapsible-toggle {
-      display: flex; align-items: center; gap: 6px;
+      display: flex; align-items: flex-start; gap: 8px;
       font-size: 0.72rem; color: rgba(212,180,99,0.45);
       cursor: pointer; margin-bottom: 6px;
       background: none; border: none; padding: 0;
       font-family: 'Lato', sans-serif; text-align: left;
-      transition: color 0.2s;
+      transition: color 0.2s; width: 100%;
     }
-    .collapsible-toggle:hover { color: rgba(212,180,99,0.8); }
+    .collapsible-toggle:hover { color: rgba(212,180,99,0.75); }
+    /* +/- icon — left-aligned, bigger, easy to tap */
     .collapsible-toggle .chevron {
-      font-size: 0.6rem; transition: transform 0.2s;
+      font-size: 1rem; line-height: 1.1;
+      font-weight: 700; flex-shrink: 0;
+      color: rgba(212,180,99,0.55);
+      transition: color 0.2s;
       display: inline-block;
+      min-width: 14px;
     }
-    .collapsible-toggle.open .chevron { transform: rotate(90deg); }
+    .collapsible-toggle:hover .chevron { color: rgba(212,180,99,0.9); }
     .collapsible-content {
       overflow: hidden;
       max-height: 0;
@@ -1047,8 +1052,7 @@ Source: SeekersGuidance
 (Hanafi)</span>
       </div>
     </div>
-    <button class="collapsible-toggle" onclick="toggleCollapsible('rentalDetail', this)">
-      <span class="chevron">▶</span> The property itself is <strong style="color:rgba(212,180,99,0.7);">not zakatable</strong> — only the cash it generates. Tap for details.
+    <button class="collapsible-toggle" onclick="toggleCollapsible('rentalDetail', this)"><span class="chevron">+</span><span>The property itself is <strong style="color:rgba(212,180,99,0.7);">not zakatable</strong> — only the net cash it generates. <span style="color:rgba(212,180,99,0.6);">Tap for details.</span></span>
     </button>
     <div class="collapsible-content" id="rentalDetail">
       <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.7; padding: 6px 0;">
@@ -1093,8 +1097,7 @@ Source: SeekersGuidance
       </div>
     </div>
     <!-- Short always-visible summary + collapsible detail -->
-    <button class="collapsible-toggle" onclick="toggleCollapsible('bizDetail', this)">
-      <span class="chevron">▶</span> Only <strong style="color:rgba(212,180,99,0.7);">current/liquid assets</strong> are zakatable — tap for guidance
+    <button class="collapsible-toggle" onclick="toggleCollapsible('bizDetail', this)"><span class="chevron">+</span><span>Only <strong style="color:rgba(212,180,99,0.7);">current/liquid assets</strong> are zakatable. <span style="color:rgba(212,180,99,0.6);">Tap for guidance.</span></span>
     </button>
     <div class="collapsible-content" id="bizDetail">
       <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:4px; line-height:1.7; padding: 6px 0;">
@@ -1215,8 +1218,7 @@ Source: SeekersGuidance
 (Hanafi)</span>
       </div>
     </div>
-    <button class="collapsible-toggle" onclick="toggleCollapsible('loanDetail', this)">
-      <span class="chevron">▶</span> Money lent out is still <strong style="color:rgba(212,180,99,0.7);">your zakatable wealth</strong> — tap to understand strong vs weak debt.
+    <button class="collapsible-toggle" onclick="toggleCollapsible('loanDetail', this)"><span class="chevron">+</span><span>Money lent out is still <strong style="color:rgba(212,180,99,0.7);">your zakatable wealth</strong>. <span style="color:rgba(212,180,99,0.6);">Tap to understand strong vs weak debt.</span></span>
     </button>
     <div class="collapsible-content" id="loanDetail">
       <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:14px; line-height:1.7; padding: 6px 0;">
@@ -1270,8 +1272,7 @@ Source: SeekersGuidance
       </div>
     </div>
 
-    <button class="collapsible-toggle" onclick="toggleCollapsible('liabDetail', this)">
-      <span class="chevron">▶</span> Personal debts are deducted from your zakatable total before 2.5% is applied. Tap for guidance.
+    <button class="collapsible-toggle" onclick="toggleCollapsible('liabDetail', this)"><span class="chevron">+</span> Personal debts are deducted from your zakatable total before 2.5% is applied. Tap for guidance.
     </button>
     <div class="collapsible-content" id="liabDetail">
       <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:14px; line-height:1.7; padding: 6px 0;">
@@ -2296,11 +2297,15 @@ Source: SeekersGuidance
   // Each collapsible has an id (e.g. 'bizDetail') and a button.
   // ============================================================
   // toggleCollapsible — for explanatory text blocks inside cards
+  // Swaps the +/- icon and slides content open/closed
   function toggleCollapsible(id, btn) {
     const content = document.getElementById(id);
     const isOpen = content.classList.contains('open');
     content.classList.toggle('open', !isOpen);
     btn.classList.toggle('open', !isOpen);
+    // Swap + to - and back
+    const chevron = btn.querySelector('.chevron');
+    if (chevron) chevron.textContent = isOpen ? '+' : '−';
   }
 
   // ============================================================
@@ -2311,7 +2316,7 @@ Source: SeekersGuidance
   // ============================================================
 
   function updateProgress() {
-    // Section 1 — Personal Assets: gold, silver, cash, crypto, stocks, 401k
+    // ── Section 1: Personal Assets (required — most users will fill this) ──
     const personalIds = ['goldGrams','silverGrams','cash','tradingStocks'];
     const personalHasValue =
       personalIds.some(id => { const el = document.getElementById(id); return el && parseFloat(el.value) > 0; }) ||
@@ -2319,18 +2324,18 @@ Source: SeekersGuidance
       getLongTermZakatableTotal() > 0 ||
       get401kZakatable() > 0;
 
-    // Section 2 — Real Estate & Business: flipping, rental, business, loans
+    // ── Section 2: Real Estate & Business (optional — many users skip this) ──
     const rebizHasValue =
       getFlipTotal() > 0 ||
       getRentalTotal() > 0 ||
       getBusinessNetZakatable() > 0 ||
       getStrongLoanTotal() > 0;
 
-    // Section 3 — Deductions: any liability field
+    // ── Section 3: Deductions (optional — users with no debts skip this) ──
     const liabIds = ['liab-mortgage','liab-carloan','liab-creditcard','liab-personal','liab-tax','liab-other','liab-priorzakat'];
     const deductionsHasValue = liabIds.some(id => { const el = document.getElementById(id); return el && parseFloat(el.value) > 0; });
 
-    // Update section header checkmarks
+    // ── Update section header checkmarks ──
     const headers = document.querySelectorAll('[data-group]');
     headers.forEach(header => {
       const group = header.getAttribute('data-group');
@@ -2341,19 +2346,33 @@ Source: SeekersGuidance
       header.classList.toggle('has-values', hasValues);
     });
 
-    // Update progress bar
-    const completed = [personalHasValue, rebizHasValue, deductionsHasValue].filter(Boolean).length;
-    const pct = (completed / 3) * 100;
-    const fill = document.getElementById('progressFill');
+    // ── Progress bar logic ──
+    // Section 1 is the primary required section (worth 60% of bar).
+    // Sections 2 and 3 are optional — each worth 20% as a bonus.
+    // This way a user who only fills section 1 still sees meaningful progress,
+    // and skipping section 2 entirely doesn't stall the bar.
+    let pct = 0;
+    if (personalHasValue)  pct += 60;
+    if (rebizHasValue)     pct += 20;
+    if (deductionsHasValue) pct += 20;
+
+    const fill  = document.getElementById('progressFill');
     const label = document.getElementById('progressLabel');
-    if (fill)  fill.style.width = pct + '%';
+    if (fill) fill.style.width = pct + '%';
     if (label) {
-      label.textContent = completed === 3
-        ? '✓ All sections complete'
-        : completed + ' of 3 sections';
-      label.style.color = completed === 3
-        ? 'rgba(100,200,120,0.7)'
-        : 'rgba(212,180,99,0.4)';
+      if (pct === 100) {
+        label.textContent = '✓ All sections complete';
+        label.style.color = 'rgba(0,0,0,0.5)';
+      } else if (pct === 60) {
+        label.textContent = 'Personal assets filled — add deductions if applicable';
+        label.style.color = 'rgba(0,0,0,0.35)';
+      } else if (pct === 0) {
+        label.textContent = 'Fill in your assets above to get started';
+        label.style.color = 'rgba(0,0,0,0.3)';
+      } else {
+        label.textContent = Math.round(pct) + '% complete';
+        label.style.color = 'rgba(0,0,0,0.35)';
+      }
     }
   }
 
@@ -2684,14 +2703,33 @@ Source: SeekersGuidance
       y += 12;
     }
 
+    // Fixed column positions (in pts from left edge):
+    // Col 1 (label):  MARGIN+4  to  360   — 308pt wide
+    // Col 2 (middle): 361       to  460   — 99pt wide, right-aligned
+    // Col 3 (value):  461       to  W-MARGIN-4 — right-aligned
+    const COL1_MAX = 360; // max x for label text
+    const COL2_X   = 455; // right edge of middle column
+    const COL3_X   = W - MARGIN - 4; // right edge of value column
+
     function row(label, middle, value, labelColor, valueColor, bg) {
-      checkPage(20);
-      if (bg) { setFill(bg); doc.rect(MARGIN, y - 11, COL, 16, 'F'); }
+      checkPage(22);
+      if (bg) { setFill(bg); doc.rect(MARGIN, y - 12, COL, 18, 'F'); }
       doc.setFontSize(9);
-      setColor(labelColor || DARK); doc.text(label, MARGIN + 4, y);
-      if (middle) { setColor(GRAY); doc.text(middle, MARGIN + COL * 0.58, y, { align: 'right' }); }
-      setColor(valueColor || DARK); doc.text(value, W - MARGIN - 4, y, { align: 'right' });
-      y += 16;
+      // Label — truncate if too long to avoid overlap
+      const maxLabelWidth = COL1_MAX - MARGIN - 4;
+      setColor(labelColor || DARK);
+      doc.text(label, MARGIN + 4, y, { maxWidth: maxLabelWidth });
+      // Middle tag (e.g. "deducted") — right-aligned in col 2
+      if (middle) {
+        setColor(GRAY);
+        doc.setFontSize(8);
+        doc.text(middle, COL2_X, y, { align: 'right' });
+        doc.setFontSize(9);
+      }
+      // Value — right-aligned in col 3
+      setColor(valueColor || DARK);
+      doc.text(value, COL3_X, y, { align: 'right' });
+      y += 18;
     }
 
     // ── Page 1 title block ──────────────────────────────────────
@@ -2811,19 +2849,19 @@ Source: SeekersGuidance
       setFill([50,50,60]); doc.rect(MARGIN, y-10, COL, 16, 'F');
       doc.setFont('helvetica', 'bold'); doc.setFontSize(8); setColor(WHITE);
       doc.text('Category', MARGIN+4, y);
-      doc.text('Zakatable Amount', MARGIN + COL*0.58, y, { align:'right' });
-      doc.text('Zakat (2.5%)', W-MARGIN-4, y, { align:'right' });
+      doc.text('Zakatable Amount', COL2_X, y, { align:'right' });
+      doc.text('Zakat (2.5%)', COL3_X, y, { align:'right' });
       doc.setFont('helvetica', 'normal');
-      y += 10;
+      y += 14;
 
       categories.forEach(function(c, i) {
-        checkPage(18);
-        if (i % 2 === 1) { setFill([248,244,234]); doc.rect(MARGIN, y-10, COL, 16, 'F'); }
+        checkPage(20);
+        if (i % 2 === 1) { setFill([248,244,234]); doc.rect(MARGIN, y-12, COL, 18, 'F'); }
         doc.setFontSize(9);
-        setColor(DARK); doc.text(c.label, MARGIN+4, y);
-        setColor(GRAY); doc.text(fmt(c.val), MARGIN + COL*0.58, y, { align:'right' });
-        setColor(DARK); doc.text(fmt(c.val * ZAKAT_RATE), W-MARGIN-4, y, { align:'right' });
-        y += 16;
+        setColor(DARK); doc.text(c.label, MARGIN+4, y, { maxWidth: COL1_MAX - MARGIN - 4 });
+        setColor(GRAY); doc.text(fmt(c.val), COL2_X, y, { align:'right' });
+        setColor(DARK); doc.text(fmt(c.val * ZAKAT_RATE), COL3_X, y, { align:'right' });
+        y += 18;
       });
 
       if (weakLoan > 0) {
