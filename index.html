@@ -361,8 +361,9 @@
       .toggle-btn { font-size: 0.82rem; padding: 8px 0; }
 
       /* Section group header: tighter on mobile */
-      .section-group-header { padding: 12px 14px; margin: 24px 0 12px; }
-      .section-group-title { font-size: 1rem; }
+      .section-group-header { margin: 30px 0 14px; }
+      .section-group-title { font-size: 1.3rem; }
+      .section-group-icon { font-size: 1.2rem; }
 
       /* Gold input right: wrap on mobile */
       .gold-price-row { flex-wrap: wrap; gap: 8px; }
@@ -370,56 +371,35 @@
     }
 
     /* ── Section group headers ── */
-    /* Bold visual dividers that separate the calculator into 3 logical sections.
-       Each header has a top rule, an icon, a title, and a subtitle.
+    /* Floats freely on the dark background — intentionally NO card border or background
+       so it reads as a structural landmark, not a content card.
        Built to be easily converted to collapsible accordions in the future. */
     .section-group-header {
-      margin: 36px 0 16px;
-      padding: 16px 20px;
-      background: rgba(212,180,99,0.04);
-      border: 1px solid rgba(212,180,99,0.18);
-      border-radius: 14px;
-      position: relative;
-      /* data-group attribute used for future collapsible upgrade */
-    }
-    .section-group-header::before {
-      /* Top accent line */
-      content: '';
-      display: block;
-      width: 36px;
-      height: 2px;
-      background: linear-gradient(90deg, #d4b463, transparent);
-      margin-bottom: 12px;
-      border-radius: 2px;
+      margin: 44px 0 18px;
+      padding: 0 4px;
+      /* No background, no border — deliberately open */
     }
     .section-group-icon {
-      font-size: 1.3rem;
-      margin-bottom: 4px;
+      font-size: 1.5rem;
       display: block;
+      margin-bottom: 6px;
     }
     .section-group-title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.15rem;
+      font-size: 1.6rem;
       font-weight: 700;
       color: #d4b463;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
+      line-height: 1.1;
     }
     .section-group-subtitle {
-      font-size: 0.72rem;
-      color: rgba(212,180,99,0.45);
-      letter-spacing: 0.04em;
+      font-size: 0.75rem;
+      color: rgba(212,180,99,0.4);
+      letter-spacing: 0.03em;
       line-height: 1.6;
-    }
-    /* Bottom rule after the header */
-    .section-group-header::after {
-      content: '';
-      display: block;
-      height: 1px;
-      background: linear-gradient(90deg, rgba(212,180,99,0.25), transparent);
-      margin-top: 12px;
     }
 
     .footer-note {
