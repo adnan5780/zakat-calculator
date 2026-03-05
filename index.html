@@ -1621,9 +1621,9 @@ Source: SeekersGuidance
 
     const totalAssets = categories.reduce((s, c) => s + c.zakatable, 0);
     const netWorth = Math.max(0, totalAssets - liabilities);
-    const thisYearZakat = eligible ? netWorth * ZAKAT_RATE : 0;
     const nisabThreshold = nisabType === 'gold' ? NISAB_GOLD_GRAMS * goldPrice : NISAB_SILVER_GRAMS * silverPrice;
     const eligible = netWorth >= nisabThreshold;
+    const thisYearZakat = eligible ? netWorth * ZAKAT_RATE : 0;
     const zakatDue = thisYearZakat + priorZakatAmount;
 
     // Build breakdown table — only show categories with a value
