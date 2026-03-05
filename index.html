@@ -377,7 +377,34 @@
     .section-group-header {
       margin: 44px 0 18px;
       padding: 0 4px;
+      cursor: pointer;
       /* No background, no border — deliberately open */
+    }
+    .section-group-header:hover .section-group-title {
+      opacity: 0.8;
+    }
+    /* Collapse chevron on section group headers */
+    .section-group-chevron {
+      display: inline-block;
+      font-size: 0.8rem;
+      color: rgba(212,180,99,0.4);
+      margin-left: 8px;
+      transition: transform 0.3s ease;
+      vertical-align: middle;
+    }
+    .section-group-header.collapsed .section-group-chevron {
+      transform: rotate(-90deg);
+    }
+    /* Group body — the cards inside each section */
+    .section-group-body {
+      overflow: hidden;
+      transition: max-height 0.4s ease, opacity 0.3s ease;
+      max-height: 9999px; /* open by default */
+      opacity: 1;
+    }
+    .section-group-body.collapsed {
+      max-height: 0;
+      opacity: 0;
     }
     .section-group-icon {
       font-size: 1.5rem;
@@ -401,6 +428,40 @@
       letter-spacing: 0.03em;
       line-height: 1.6;
     }
+
+    /* ── Progress indicator ── */
+    /* Lives inside the sticky calculate button at the bottom.
+       Fills based on how many of the 3 sections have values entered. */
+    .sticky-progress-track {
+      height: 3px;
+      border-radius: 2px;
+      background: rgba(0,0,0,0.15);
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .sticky-progress-fill {
+      height: 100%; border-radius: 2px;
+      background: rgba(0,0,0,0.4);
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+    .sticky-progress-label {
+      display: block;
+      font-size: 0.62rem;
+      color: rgba(0,0,0,0.4);
+      letter-spacing: 0.08em;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    /* Checkmark on section headers — keep for accessibility */
+    .section-group-check {
+      display: none;
+      font-size: 0.75rem;
+      color: rgba(100,200,120,0.8);
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .section-group-header.has-values .section-group-check { display: inline; }
 
     .footer-note {
       text-align: center; font-size: 0.72rem;
@@ -482,12 +543,12 @@ using the gold standard.</span>
   </div>
 
   <!-- ── GROUP 1: PERSONAL ASSETS ───────────────────────── -->
-  <!-- Future upgrade: wrap cards below in a collapsible div and add onclick to this header -->
-  <div class="section-group-header" data-group="personal-assets">
+  <div class="section-group-header" data-group="personal-assets" onclick="toggleGroup('group-personal')">
     <span class="section-group-icon">💼</span>
-    <span class="section-group-title">Personal Assets</span>
+    <span class="section-group-title">Personal Assets <span class="section-group-chevron">▼</span><span class="section-group-check">✓</span></span>
     <span class="section-group-subtitle">Gold &amp; silver, cash, crypto, stocks, and retirement accounts</span>
   </div>
+  <div class="section-group-body" id="group-personal">
 
   <!-- Precious Metals -->
   <div class="card">
@@ -920,13 +981,15 @@ Per Fiqh Council of North America.</span>
     </div>
   </div>
 
+  </div><!-- end group-personal -->
+
   <!-- ── GROUP 2: REAL ESTATE & BUSINESS ────────────────── -->
-  <!-- Future upgrade: wrap cards below in a collapsible div and add onclick to this header -->
-  <div class="section-group-header" data-group="real-estate-business">
+  <div class="section-group-header" data-group="real-estate-business" onclick="toggleGroup('group-rebiz')">
     <span class="section-group-icon">🏢</span>
-    <span class="section-group-title">Real Estate &amp; Business</span>
+    <span class="section-group-title">Real Estate &amp; Business <span class="section-group-chevron">▼</span><span class="section-group-check">✓</span></span>
     <span class="section-group-subtitle">Flipping properties, rental income, business assets, partnerships, and money lent to others</span>
   </div>
+  <div class="section-group-body" id="group-rebiz">
 
   <!-- Real Estate - Flipping -->
   <div class="card">
@@ -1174,13 +1237,15 @@ Source: SeekersGuidance
     <div id="loanSummary" style="display:none; margin-top:12px;"></div>
   </div>
 
+  </div><!-- end group-rebiz -->
+
   <!-- ── GROUP 3: DEDUCTIONS ─────────────────────────────── -->
-  <!-- Future upgrade: wrap cards below in a collapsible div and add onclick to this header -->
-  <div class="section-group-header" data-group="deductions">
+  <div class="section-group-header" data-group="deductions" onclick="toggleGroup('group-deductions')">
     <span class="section-group-icon">📉</span>
-    <span class="section-group-title">Deductions</span>
+    <span class="section-group-title">Deductions <span class="section-group-chevron">▼</span><span class="section-group-check">✓</span></span>
     <span class="section-group-subtitle">Personal debts currently due — deducted from your zakatable total before zakat is calculated</span>
   </div>
+  <div class="section-group-body" id="group-deductions">
 
   <!-- Liabilities -->
   <div class="card">
@@ -1307,6 +1372,8 @@ Source: SeekersGuidance
   </div>
 
   <!-- Button -->
+  </div><!-- end group-deductions -->
+
   <button class="calc-btn" onclick="showResults()">CALCULATE ZAKAT</button>
 
   <!-- Results -->
@@ -1363,13 +1430,46 @@ Source: SeekersGuidance
     </div>
 
     <p class="result-msg" id="resultMsg"></p>
+
+    <!-- Download PDF button — only shown after calculate is pressed -->
+    <button id="pdfBtn" onclick="downloadZakatPDF()" style="
+      display:none; margin-top:20px; width:100%; padding:13px;
+      background:transparent; border:1px solid rgba(212,180,99,0.4);
+      border-radius:12px; color:rgba(212,180,99,0.8);
+      font-family:'Cormorant Garamond',serif; font-size:1rem;
+      letter-spacing:0.06em; cursor:pointer; transition:all 0.2s;">
+      ⬇ Download Zakat Report (PDF)
+    </button>
   </div>
 
   <!-- Sticky Calculate Button — always visible at bottom of screen -->
   <!-- This replaces the inline button which is now hidden via CSS -->
-  <button class="sticky-calc-btn" onclick="showResults()">
-    CALCULATE ZAKAT
-  </button>
+  <!-- Sticky Calculate Button with embedded progress indicator -->
+  <div style="
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    width:calc(100% - 48px); max-width:572px;
+    z-index:1000;">
+    <div style="
+      background:linear-gradient(135deg, #d4b463 0%, #b8922a 100%);
+      border-radius:14px; padding:12px 20px;
+      box-shadow:0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(212,180,99,0.2);">
+      <!-- Progress bar -->
+      <span class="sticky-progress-label" id="progressLabel">0 of 3 sections filled</span>
+      <div class="sticky-progress-track">
+        <div class="sticky-progress-fill" id="progressFill"></div>
+      </div>
+      <!-- Button -->
+      <button onclick="showResults()" style="
+        width:100%; padding:10px 0;
+        background:transparent; border:none;
+        color:#0d1117; font-size:1.05rem;
+        font-family:'Cormorant Garamond',serif;
+        font-weight:700; letter-spacing:0.08em;
+        cursor:pointer;">
+        CALCULATE ZAKAT
+      </button>
+    </div>
+  </div>
 
   <p class="footer-note">
     Gold & silver prices are approximate — verify current market rates before calculating.<br/>
@@ -1407,6 +1507,8 @@ Source: SeekersGuidance
 </div>
 
 <script src="taxes.js"></script>
+<!-- jsPDF — generates the zakat report PDF entirely in the browser, no server needed -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
   const ZAKAT_RATE = 0.025;
   const NISAB_GOLD_GRAMS = 85;
@@ -1598,6 +1700,7 @@ Source: SeekersGuidance
     updateBusinessNote();
     updateLoanSummary();
     compute401kTax();
+    updateProgress(); // refresh progress bar when results are calculated
   }
 
   function showResults() {
@@ -1782,6 +1885,7 @@ Source: SeekersGuidance
     }
 
     box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    showPDFButton(); // reveal the Download PDF button now that results are shown
   }
 
   function set401kMethod(method) {
@@ -2191,11 +2295,86 @@ Source: SeekersGuidance
   // Toggles the open/closed state of explanatory text blocks.
   // Each collapsible has an id (e.g. 'bizDetail') and a button.
   // ============================================================
+  // toggleCollapsible — for explanatory text blocks inside cards
   function toggleCollapsible(id, btn) {
     const content = document.getElementById(id);
     const isOpen = content.classList.contains('open');
     content.classList.toggle('open', !isOpen);
     btn.classList.toggle('open', !isOpen);
+  }
+
+  // ============================================================
+  // PROGRESS INDICATOR
+  // Tracks which of the 3 section groups has at least one
+  // non-zero value entered. Updates the progress bar and
+  // adds a checkmark to completed section headers live.
+  // ============================================================
+
+  function updateProgress() {
+    // Section 1 — Personal Assets: gold, silver, cash, crypto, stocks, 401k
+    const personalIds = ['goldGrams','silverGrams','cash','tradingStocks'];
+    const personalHasValue =
+      personalIds.some(id => { const el = document.getElementById(id); return el && parseFloat(el.value) > 0; }) ||
+      getCryptoTotal() > 0 ||
+      getLongTermZakatableTotal() > 0 ||
+      get401kZakatable() > 0;
+
+    // Section 2 — Real Estate & Business: flipping, rental, business, loans
+    const rebizHasValue =
+      getFlipTotal() > 0 ||
+      getRentalTotal() > 0 ||
+      getBusinessNetZakatable() > 0 ||
+      getStrongLoanTotal() > 0;
+
+    // Section 3 — Deductions: any liability field
+    const liabIds = ['liab-mortgage','liab-carloan','liab-creditcard','liab-personal','liab-tax','liab-other','liab-priorzakat'];
+    const deductionsHasValue = liabIds.some(id => { const el = document.getElementById(id); return el && parseFloat(el.value) > 0; });
+
+    // Update section header checkmarks
+    const headers = document.querySelectorAll('[data-group]');
+    headers.forEach(header => {
+      const group = header.getAttribute('data-group');
+      let hasValues = false;
+      if (group === 'personal-assets')      hasValues = personalHasValue;
+      if (group === 'real-estate-business') hasValues = rebizHasValue;
+      if (group === 'deductions')           hasValues = deductionsHasValue;
+      header.classList.toggle('has-values', hasValues);
+    });
+
+    // Update progress bar
+    const completed = [personalHasValue, rebizHasValue, deductionsHasValue].filter(Boolean).length;
+    const pct = (completed / 3) * 100;
+    const fill = document.getElementById('progressFill');
+    const label = document.getElementById('progressLabel');
+    if (fill)  fill.style.width = pct + '%';
+    if (label) {
+      label.textContent = completed === 3
+        ? '✓ All sections complete'
+        : completed + ' of 3 sections';
+      label.style.color = completed === 3
+        ? 'rgba(100,200,120,0.7)'
+        : 'rgba(212,180,99,0.4)';
+    }
+  }
+
+  // Attach progress tracking to all number inputs on the page
+  // Called once on page load — picks up any input and reruns updateProgress on change
+  function initProgress() {
+    document.querySelectorAll('input[type=number], input[type=text]').forEach(input => {
+      input.addEventListener('input', updateProgress);
+    });
+    updateProgress(); // run once on load
+  }
+
+  // toggleGroup — for collapsing entire section groups (Personal Assets, RE&Biz, Deductions)
+  // The header itself is the toggle button; the body div slides up/down
+  function toggleGroup(bodyId) {
+    const body = document.getElementById(bodyId);
+    const isCollapsed = body.classList.contains('collapsed');
+    // Find the header (previous sibling of the body)
+    const header = body.previousElementSibling;
+    body.classList.toggle('collapsed', !isCollapsed);
+    if (header) header.classList.toggle('collapsed', !isCollapsed);
   }
 
   function calcTaxFromBrackets(income, brackets) {
@@ -2454,7 +2633,232 @@ Source: SeekersGuidance
     btn.textContent = '✦ Import Live Gold & Silver Prices';
   }
 
-  window.addEventListener('DOMContentLoaded', positionTooltips);
+
+  // ============================================================
+  // PDF ZAKAT REPORT
+  // Generates a clean formatted PDF entirely in the browser.
+  // Uses jsPDF (loaded from CDN above) — no server involved.
+  // Called when user clicks "Download Zakat Report (PDF)"
+  // ============================================================
+  function downloadZakatPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+
+    const GOLD  = [212, 180, 99];
+    const DARK  = [15,  20,  30];
+    const GRAY  = [100, 100, 110];
+    const LGRAY = [240, 235, 220];
+    const WHITE = [255, 255, 255];
+    const RED   = [200,  80,  80];
+    const W     = 612;
+    const MARGIN = 48;
+    const COL   = W - MARGIN * 2;
+    let   y     = MARGIN;
+
+    function setColor(rgb) { doc.setTextColor(...rgb); }
+    function setFill(rgb)  { doc.setFillColor(...rgb); }
+    function setDraw(rgb)  { doc.setDrawColor(...rgb); }
+
+    function ruleLine(rgb, thickness) {
+      setDraw(rgb); doc.setLineWidth(thickness || 0.5);
+      doc.line(MARGIN, y, W - MARGIN, y);
+    }
+
+    function checkPage(needed) {
+      if (y + (needed || 40) > 760) {
+        doc.addPage();
+        y = MARGIN;
+        drawPageHeader();
+      }
+    }
+
+    function drawPageHeader() {
+      setFill(GOLD); doc.rect(0, 0, W, 4, 'F');
+      y = 22;
+      doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+      setColor(GRAY);
+      doc.text('ZAKAT REPORT — HANAFI METHODOLOGY', MARGIN, y);
+      doc.text('zakat-calculator.vercel.app', W - MARGIN, y, { align: 'right' });
+      y += 10;
+      setDraw(LGRAY); doc.setLineWidth(0.5); doc.line(MARGIN, y, W - MARGIN, y);
+      y += 12;
+    }
+
+    function row(label, middle, value, labelColor, valueColor, bg) {
+      checkPage(20);
+      if (bg) { setFill(bg); doc.rect(MARGIN, y - 11, COL, 16, 'F'); }
+      doc.setFontSize(9);
+      setColor(labelColor || DARK); doc.text(label, MARGIN + 4, y);
+      if (middle) { setColor(GRAY); doc.text(middle, MARGIN + COL * 0.58, y, { align: 'right' }); }
+      setColor(valueColor || DARK); doc.text(value, W - MARGIN - 4, y, { align: 'right' });
+      y += 16;
+    }
+
+    // ── Page 1 title block ──────────────────────────────────────
+    setFill(GOLD); doc.rect(0, 0, W, 6, 'F');
+    y = 56;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
+    setColor(DARK); doc.text('ZAKAT REPORT', MARGIN, y);
+    doc.setFont('helvetica', 'normal');
+    y += 28;
+
+    const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+    doc.setFontSize(9); setColor(GRAY);
+    doc.text('Generated: ' + today, MARGIN, y);
+    doc.text('School of Thought: Hanafi', W - MARGIN, y, { align: 'right' });
+    y += 14;
+    doc.text('Sources: SeekersGuidance · Fiqh Council of North America', MARGIN, y);
+    y += 18;
+    setDraw(GOLD); doc.setLineWidth(1); doc.line(MARGIN, y, W - MARGIN, y);
+    y += 22;
+
+    // ── Gather values ───────────────────────────────────────────
+    const goldGrams   = val('goldGrams');
+    const goldPrice   = val('goldPrice');
+    const silverGrams = val('silverGrams');
+    const silverPrice = val('silverPrice');
+    const cash        = val('cash');
+    const trading     = val('tradingStocks');
+    const crypto      = getCryptoTotal();
+    const longTerm    = getLongTermZakatableTotal();
+    const ret401k     = get401kZakatable();
+    const flip        = getFlipTotal();
+    const rental      = getRentalTotal();
+    const bizNet      = getBusinessNetZakatable();
+    const strongLoan  = getStrongLoanTotal();
+    const weakLoan    = getWeakLoanTotal();
+    const liabilities = getLiabilitiesTotal();
+    const priorZakat  = getPriorZakat();
+
+    const categories = [
+      { label: 'Gold',                val: goldGrams * goldPrice },
+      { label: 'Silver',              val: silverGrams * silverPrice },
+      { label: 'Cash & Savings',      val: cash },
+      { label: 'Cryptocurrency',      val: crypto },
+      { label: 'Trading Stocks',      val: trading },
+      { label: 'Long-term Stocks',    val: longTerm },
+      { label: '401(k) / IRA',        val: ret401k },
+      { label: 'Property (Flipping)', val: flip },
+      { label: 'Rental Income',       val: rental },
+      { label: 'Business Assets',     val: bizNet },
+      { label: 'Money Lent (Strong)', val: strongLoan },
+    ].filter(function(c) { return c.val > 0; });
+
+    const totalAssets   = categories.reduce(function(s,c){return s+c.val;}, 0);
+    const netWorth      = Math.max(0, totalAssets - liabilities);
+    const nisabThresh   = nisabType === 'gold'
+      ? NISAB_GOLD_GRAMS * goldPrice
+      : NISAB_SILVER_GRAMS * silverPrice;
+    const eligible      = netWorth >= nisabThresh;
+    const thisYearZakat = eligible ? netWorth * ZAKAT_RATE : 0;
+    const totalOwed     = thisYearZakat + priorZakat;
+
+    // ── Calculation Summary ─────────────────────────────────────
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+    setColor(GOLD); doc.text('CALCULATION SUMMARY', MARGIN, y);
+    doc.setFont('helvetica', 'normal');
+    y += 16;
+    setDraw([200,190,160]); doc.setLineWidth(0.5); doc.line(MARGIN, y, W-MARGIN, y);
+    y += 14;
+
+    row('Total Zakatable Assets', '', fmt(totalAssets), DARK, DARK, LGRAY);
+    if (liabilities > 0) {
+      row('Personal Liabilities', 'deducted', '− ' + fmt(liabilities), RED, RED, null);
+    }
+    row('Net Zakatable Wealth', '', fmt(netWorth), DARK, DARK, LGRAY);
+    row('Zakat Rate', '', '× 2.5%', GRAY, GRAY, null);
+    y += 4;
+    setDraw(GOLD); doc.setLineWidth(0.5); doc.line(MARGIN, y, W-MARGIN, y);
+    y += 10;
+    doc.setFont('helvetica', 'bold');
+    row("This Year's Zakat", '', fmt(thisYearZakat), DARK, GOLD, [245,238,210]);
+    doc.setFont('helvetica', 'normal');
+
+    if (priorZakat > 0) {
+      row('Prior Year Unpaid Zakat', '', fmt(priorZakat), GRAY, GRAY, null);
+      setDraw(GOLD); doc.setLineWidth(0.5); doc.line(MARGIN, y, W-MARGIN, y);
+      y += 6;
+      doc.setFont('helvetica', 'bold');
+      row('TOTAL OWED', '', fmt(totalOwed), DARK, GOLD, [245,238,210]);
+      doc.setFont('helvetica', 'normal');
+    }
+
+    y += 14;
+    checkPage(30);
+    const eligColor = eligible ? [40,120,40] : [160,40,40];
+    const eligBg    = eligible ? [230,245,230] : [245,230,230];
+    setFill(eligBg); doc.rect(MARGIN, y-10, COL, 22, 'F');
+    doc.setFontSize(9); setColor(eligColor);
+    const statusMsg = eligible
+      ? ('\u2713 Above Nisab threshold of ' + fmt(nisabThresh) + ' — Zakat is obligatory')
+      : ('\u2717 Below Nisab threshold of ' + fmt(nisabThresh) + ' — Zakat is not obligatory');
+    doc.text(statusMsg, MARGIN + 8, y + 4);
+    y += 28;
+
+    // ── Itemized Breakdown ──────────────────────────────────────
+    if (categories.length > 0) {
+      y += 8; checkPage(40);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+      setColor(GOLD); doc.text('ITEMIZED BREAKDOWN BY CATEGORY', MARGIN, y);
+      doc.setFont('helvetica', 'normal');
+      y += 16;
+      setDraw([200,190,160]); doc.setLineWidth(0.5); doc.line(MARGIN, y, W-MARGIN, y);
+      y += 10;
+      doc.setFontSize(8); setColor(GRAY);
+      doc.text('\u26a0 Per-category amounts are pre-liability and will not sum to final zakat due when liabilities exist.', MARGIN, y);
+      y += 14;
+
+      setFill([50,50,60]); doc.rect(MARGIN, y-10, COL, 16, 'F');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8); setColor(WHITE);
+      doc.text('Category', MARGIN+4, y);
+      doc.text('Zakatable Amount', MARGIN + COL*0.58, y, { align:'right' });
+      doc.text('Zakat (2.5%)', W-MARGIN-4, y, { align:'right' });
+      doc.setFont('helvetica', 'normal');
+      y += 10;
+
+      categories.forEach(function(c, i) {
+        checkPage(18);
+        if (i % 2 === 1) { setFill([248,244,234]); doc.rect(MARGIN, y-10, COL, 16, 'F'); }
+        doc.setFontSize(9);
+        setColor(DARK); doc.text(c.label, MARGIN+4, y);
+        setColor(GRAY); doc.text(fmt(c.val), MARGIN + COL*0.58, y, { align:'right' });
+        setColor(DARK); doc.text(fmt(c.val * ZAKAT_RATE), W-MARGIN-4, y, { align:'right' });
+        y += 16;
+      });
+
+      if (weakLoan > 0) {
+        y += 8; checkPage(34);
+        setFill([255,248,220]); doc.rect(MARGIN, y-10, COL, 30, 'F');
+        doc.setFontSize(8); setColor([160,120,0]);
+        doc.text('\u26a0 Weak Debts (excluded from calculation): ' + fmt(weakLoan), MARGIN+4, y);
+        y += 12;
+        doc.text('Back-zakat will be owed upon receipt. Consult a scholar to calculate the accumulated amount.', MARGIN+4, y);
+        y += 18;
+      }
+    }
+
+    // ── Footer ──────────────────────────────────────────────────
+    y = 748;
+    setDraw(LGRAY); doc.setLineWidth(0.5); doc.line(MARGIN, y, W-MARGIN, y);
+    y += 10;
+    doc.setFontSize(7); setColor([160,160,160]);
+    doc.text('This report is a guide based on Hanafi fiqh. Consult a qualified scholar for your specific situation.', W/2, y, { align:'center' });
+    y += 10;
+    doc.text('Sources: SeekersGuidance and the Fiqh Council of North America · zakat-calculator.vercel.app', W/2, y, { align:'center' });
+
+    doc.save('Zakat_Report_' + new Date().getFullYear() + '.pdf');
+  }
+
+  // Show the PDF download button once results have been calculated
+  function showPDFButton() {
+    const btn = document.getElementById('pdfBtn');
+    if (btn) btn.style.display = 'block';
+  }
+
+  window.addEventListener('DOMContentLoaded', function() {
+    positionTooltips();
+    initProgress(); // start progress tracking after page loads
+  });
 </script>
 </body>
 </html>
