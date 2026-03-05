@@ -311,8 +311,7 @@
   <div style="max-width:620px; margin: 0 auto 24px; background:rgba(212,180,99,0.05); border:1px solid rgba(212,180,99,0.2); border-radius:14px; padding:16px 22px;">
     <div style="font-family:'Cormorant Garamond',serif; font-size:0.85rem; color:rgba(212,180,99,0.6); letter-spacing:0.08em; margin-bottom:10px;">ABOUT THIS CALCULATOR</div>
     <div style="font-size:0.76rem; color:rgba(240,230,200,0.5); line-height:2;">
-      <div>🕌 &nbsp;Follows the <strong style="color:rgba(212,180,99,0.7);">Hanafi school of thought</strong></div>
-      <div>📖 &nbsp;Based on rulings from the <strong style="color:rgba(212,180,99,0.7);">Fiqh Council of North America</strong> and <strong style="color:rgba(212,180,99,0.7);">SeekersGuidance</strong></div>
+      <div>🕌 &nbsp;Calculations follow the <strong style="color:rgba(212,180,99,0.7);">Hanafi school of thought</strong>, with rulings sourced from the <strong style="color:rgba(212,180,99,0.7);">Fiqh Council of North America</strong> and <strong style="color:rgba(212,180,99,0.7);">SeekersGuidance</strong> where applicable</div>
       <div>🌙 &nbsp;Zakat is calculated on your <strong style="color:rgba(212,180,99,0.7);">lunar year anniversary date</strong> — use an Islamic calendar to set your annual due date consistently</div>
       <div>🤲 &nbsp;This calculator is a <strong style="color:rgba(212,180,99,0.7);">guide only</strong> — consult a qualified scholar for your specific situation</div>
     </div>
@@ -669,10 +668,57 @@ Per Fiqh Council of North America.</span>
             background:rgba(20,15,10,0.8); border:1px solid rgba(212,180,99,0.25);
             color:rgba(240,230,200,0.75); padding:8px 10px; border-radius:8px;
             font-family:'Cormorant Garamond',serif; font-size:0.88rem; width:100%;">
-            <option value="none">No state income tax</option>
-            <option value="nj" selected>New Jersey</option>
-            <option value="ny">New York</option>
+            <option value="al">Alabama</option>
+            <option value="ak">Alaska (No Income Tax)</option>
+            <option value="az">Arizona</option>
+            <option value="ar">Arkansas</option>
+            <option value="ca">California</option>
+            <option value="co">Colorado</option>
             <option value="ct">Connecticut</option>
+            <option value="de">Delaware</option>
+            <option value="fl">Florida (No Income Tax)</option>
+            <option value="ga">Georgia</option>
+            <option value="hi">Hawaii</option>
+            <option value="id">Idaho</option>
+            <option value="il">Illinois</option>
+            <option value="in">Indiana</option>
+            <option value="ia">Iowa</option>
+            <option value="ks">Kansas</option>
+            <option value="ky">Kentucky</option>
+            <option value="la">Louisiana</option>
+            <option value="me">Maine</option>
+            <option value="md">Maryland</option>
+            <option value="ma">Massachusetts</option>
+            <option value="mi">Michigan</option>
+            <option value="mn">Minnesota</option>
+            <option value="ms">Mississippi</option>
+            <option value="mo">Missouri</option>
+            <option value="mt">Montana</option>
+            <option value="ne">Nebraska</option>
+            <option value="nv">Nevada (No Income Tax)</option>
+            <option value="nh">New Hampshire (No Income Tax)</option>
+            <option value="nj" selected>New Jersey</option>
+            <option value="nm">New Mexico</option>
+            <option value="ny">New York</option>
+            <option value="nc">North Carolina</option>
+            <option value="nd">North Dakota</option>
+            <option value="oh">Ohio</option>
+            <option value="ok">Oklahoma</option>
+            <option value="or">Oregon</option>
+            <option value="pa">Pennsylvania</option>
+            <option value="ri">Rhode Island</option>
+            <option value="sc">South Carolina</option>
+            <option value="sd">South Dakota (No Income Tax)</option>
+            <option value="tn">Tennessee (No Income Tax)</option>
+            <option value="tx">Texas (No Income Tax)</option>
+            <option value="ut">Utah</option>
+            <option value="vt">Vermont</option>
+            <option value="va">Virginia</option>
+            <option value="wa">Washington (No Income Tax)</option>
+            <option value="wv">West Virginia</option>
+            <option value="wi">Wisconsin</option>
+            <option value="wy">Wyoming (No Income Tax)</option>
+            <option value="dc">Washington D.C.</option>
           </select>
         </div>
       </div>
@@ -1084,6 +1130,7 @@ Source: SeekersGuidance
 
 </div>
 
+<script src="taxes.js"></script>
 <script>
   const ZAKAT_RATE = 0.025;
   const NISAB_GOLD_GRAMS = 85;
@@ -1805,74 +1852,8 @@ Source: SeekersGuidance
   let taxMode = 'return'; // 'return' or 'estimate'
   let computed401kZakatable = 0;
 
-  // 2025 Federal brackets [ceiling, rate]
-  const FED_BRACKETS = {
-    single: [
-      [11925, 0.10], [48475, 0.12], [103350, 0.22],
-      [197300, 0.24], [250525, 0.32], [626350, 0.35], [Infinity, 0.37]
-    ],
-    mfj: [
-      [23850, 0.10], [96950, 0.12], [206700, 0.22],
-      [394600, 0.24], [501050, 0.32], [751600, 0.35], [Infinity, 0.37]
-    ],
-    hoh: [
-      [17000, 0.10], [64850, 0.12], [103350, 0.22],
-      [197300, 0.24], [250500, 0.32], [626350, 0.35], [Infinity, 0.37]
-    ]
-  };
-
-  // 2025 Standard deductions
-  const STD_DEDUCTION = { single: 15750, mfj: 31500, hoh: 22500 };
-
-  // 2025 State brackets [ceiling, rate] — married filing jointly / single
-  const STATE_BRACKETS = {
-    nj: {
-      single: [
-        [20000, 0.014], [35000, 0.0175], [40000, 0.035],
-        [75000, 0.05525], [500000, 0.0637], [1000000, 0.0897], [Infinity, 0.1075]
-      ],
-      mfj: [
-        [20000, 0.014], [50000, 0.0175], [70000, 0.035],
-        [80000, 0.05525], [150000, 0.0637], [500000, 0.0897], [Infinity, 0.1075]
-      ],
-      hoh: [
-        [20000, 0.014], [50000, 0.0175], [70000, 0.035],
-        [80000, 0.05525], [150000, 0.0637], [500000, 0.0897], [Infinity, 0.1075]
-      ]
-    },
-    ny: {
-      single: [
-        [17150, 0.04], [23600, 0.045], [27900, 0.0525],
-        [161550, 0.055], [323200, 0.06], [2155350, 0.0685],
-        [5000000, 0.0965], [25000000, 0.103], [Infinity, 0.109]
-      ],
-      mfj: [
-        [27900, 0.04], [23600, 0.045], [43000, 0.0525],
-        [161550, 0.055], [323200, 0.06], [2155350, 0.0685],
-        [5000000, 0.0965], [25000000, 0.103], [Infinity, 0.109]
-      ],
-      hoh: [
-        [17650, 0.04], [23600, 0.045], [27900, 0.0525],
-        [161550, 0.055], [323200, 0.06], [2155350, 0.0685],
-        [5000000, 0.0965], [25000000, 0.103], [Infinity, 0.109]
-      ]
-    },
-    ct: {
-      single: [
-        [10000, 0.02], [50000, 0.045], [100000, 0.055],
-        [200000, 0.06], [250000, 0.065], [500000, 0.069], [Infinity, 0.0699]
-      ],
-      mfj: [
-        [20000, 0.02], [100000, 0.045], [200000, 0.055],
-        [400000, 0.06], [500000, 0.065], [1000000, 0.069], [Infinity, 0.0699]
-      ],
-      hoh: [
-        [16000, 0.02], [80000, 0.045], [160000, 0.055],
-        [320000, 0.06], [400000, 0.065], [800000, 0.069], [Infinity, 0.0699]
-      ]
-    },
-    none: { single: [], mfj: [], hoh: [] }
-  };
+  // Tax brackets loaded from taxes.js (TAX_YEAR: 2025)
+  // To update: edit taxes.js — no changes needed here
 
   function calcTaxFromBrackets(income, brackets) {
     let tax = 0, prev = 0;
@@ -1931,7 +1912,8 @@ Source: SeekersGuidance
     }
 
     const fedBrackets = FED_BRACKETS[filingStatus];
-    const stateBrackets = (STATE_BRACKETS[stateKey] || STATE_BRACKETS.none)[filingStatus] || [];
+    const stateData = STATE_BRACKETS[stateKey];
+    const stateBrackets = stateData ? (stateData[filingStatus] || []) : [];
 
     // Federal tax on existing income vs income + withdrawal
     const fedTaxBase = calcTaxFromBrackets(taxableIncome, fedBrackets);
@@ -1951,8 +1933,9 @@ Source: SeekersGuidance
     const netZakatable = Math.max(0, balance - penalty - totalTax);
     computed401kZakatable = netZakatable;
 
-    const stateNames = { nj: 'NJ', ny: 'NY', ct: 'CT', none: 'State' };
-    const stateName = stateNames[stateKey] || '';
+    const stateData2 = STATE_BRACKETS[stateKey];
+    const stateName = stateData2 ? stateData2.name.replace(/ \(No Income Tax\)/,'') : '';
+    const hasStateTax = stateData2 && stateData2[filingStatus] && stateData2[filingStatus].length > 0;
 
     // Build lines
     let lines = '';
@@ -1966,7 +1949,7 @@ Source: SeekersGuidance
     lines += `<div style="border-top:1px solid rgba(212,180,99,0.1); margin:4px 0;"></div>`;
     lines += `<div>10% early withdrawal penalty: <span style="color:rgba(255,120,120,0.7);">− ${fmt(penalty)}</span></div>`;
     lines += `<div>Federal tax on withdrawal (${fedEffRate.toFixed(1)}% effective): <span style="color:rgba(255,120,120,0.7);">− ${fmt(fedTaxOnWithdrawal)}</span></div>`;
-    if (stateKey !== 'none') {
+    if (hasStateTax) {
       lines += `<div>${stateName} state tax on withdrawal (${stateEffRate.toFixed(1)}% effective): <span style="color:rgba(255,120,120,0.7);">− ${fmt(stateTaxOnWithdrawal)}</span></div>`;
     }
     lines += `<div style="border-top:1px solid rgba(212,180,99,0.2); margin:6px 0 2px;"></div>`;
