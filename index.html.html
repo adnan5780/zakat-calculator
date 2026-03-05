@@ -746,8 +746,8 @@ Source: SeekersGuidance
 within the current lunar year
 are deductible.
 
-Mortgage: deduct 12 months
-of principal payments only —
+Mortgage: deduct your next
+single principal payment only —
 not the interest portion.
 
 Business debts handled
@@ -777,8 +777,8 @@ Source: SeekersGuidance
     <!-- Mortgage -->
     <div class="input-row">
       <div>
-        <div class="input-label">Mortgage — monthly principal</div>
-        <div class="input-sublabel">Principal portion only (exclude interest) — found on your mortgage statement</div>
+        <div class="input-label">Mortgage — next principal payment</div>
+        <div class="input-sublabel">Principal portion of your next single payment only (exclude interest) — found on your mortgage statement</div>
       </div>
       <div class="input-right">
         <span class="input-prefix">$</span>
@@ -1456,19 +1456,18 @@ Source: SeekersGuidance
 
   function updateLiabilitiesTotal() {
     const creditCard = val('liab-creditcard');
-    const mortgageMonthly = val('liab-mortgage-monthly');
-    const annualMortgage = mortgageMonthly * 12;
+    const mortgageNext = val('liab-mortgage-monthly');
     const personalLoan = val('liab-personalloan');
     const personal = val('liab-personal');
     const taxes = val('liab-taxes');
     const other = val('liab-other');
-    const total = creditCard + annualMortgage + personalLoan + personal + taxes + other;
+    const total = creditCard + mortgageNext + personalLoan + personal + taxes + other;
 
-    // Show mortgage annualised note
+    // Show mortgage note
     const note = document.getElementById('mortgageNote');
-    if (mortgageMonthly > 0) {
+    if (mortgageNext > 0) {
       note.style.display = 'block';
-      note.textContent = `12 months of principal deducted: ${fmt(annualMortgage)}`;
+      note.textContent = `Next principal payment deducted: ${fmt(mortgageNext)} (Hanafi: one installment only)`;
     } else {
       note.style.display = 'none';
     }
@@ -1486,12 +1485,12 @@ Source: SeekersGuidance
 
   function getLiabilitiesTotal() {
     const creditCard = val('liab-creditcard');
-    const annualMortgage = val('liab-mortgage-monthly') * 12;
+    const mortgageNext = val('liab-mortgage-monthly');
     const personalLoan = val('liab-personalloan');
     const personal = val('liab-personal');
     const taxes = val('liab-taxes');
     const other = val('liab-other');
-    return creditCard + annualMortgage + personalLoan + personal + taxes + other;
+    return creditCard + mortgageNext + personalLoan + personal + taxes + other;
   }
 
   async function importLivePrices() {
