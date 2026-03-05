@@ -732,8 +732,43 @@ Source: SeekersGuidance
 (Hanafi)</span>
       </div>
     </div>
-    <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:4px; line-height:1.6;">
+    <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:10px; line-height:1.6;">
       Only <strong style="color:rgba(212,180,99,0.7);">current/liquid assets</strong> are zakatable. Fixed assets used to run the business are not.
+    </div>
+
+    <!-- Ownership toggle -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:8px;">Are you the sole owner or a partial owner of this business?</div>
+      <div style="display:flex; gap:10px;">
+        <button id="btnSoleOwner" onclick="setOwnershipType('sole')" style="
+          flex:1; padding:9px 6px; border-radius:10px;
+          border:1px solid #d4b463; background:rgba(212,180,99,0.15);
+          color:#d4b463; cursor:pointer; transition:all 0.2s;
+          font-family:'Cormorant Garamond',serif; font-size:0.88rem;">
+          Sole Owner
+        </button>
+        <button id="btnPartialOwner" onclick="setOwnershipType('partial')" style="
+          flex:1; padding:9px 6px; border-radius:10px;
+          border:1px solid rgba(212,180,99,0.2); background:transparent;
+          color:rgba(240,230,200,0.4); cursor:pointer; transition:all 0.2s;
+          font-family:'Cormorant Garamond',serif; font-size:0.88rem;">
+          Partial Owner
+        </button>
+      </div>
+    </div>
+
+    <!-- Ownership % (only shown for partial owners) -->
+    <div id="ownershipPctRow" style="display:none;">
+      <div class="input-row">
+        <div>
+          <div class="input-label">Your ownership percentage</div>
+          <div class="input-sublabel">e.g. enter 40 if you own 40% of the business. Zakat is calculated on your proportional share of zakatable assets only.</div>
+        </div>
+        <div class="input-right">
+          <span class="input-prefix">%</span>
+          <input type="number" id="ownershipPct" value="100" min="1" max="100" oninput="updateBusinessNote()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+        </div>
+      </div>
     </div>
 
     <!-- Cash -->
@@ -784,6 +819,9 @@ Source: SeekersGuidance
     <div class="lt-note" id="businessNote" style="display:none;"></div>
     <div style="font-size:0.7rem; color:rgba(212,180,99,0.3); margin-top:10px; line-height:1.7;">
       ✗ Not zakatable: office equipment, machinery, vehicles, property, furniture, software licenses — fixed assets used to operate the business.
+    </div>
+    <div style="font-size:0.7rem; color:rgba(212,180,99,0.3); margin-top:6px; line-height:1.7;">
+      👥 If your business partner is also Muslim and paying zakat on their own share, there is no double-counting — each partner pays on their own proportional share independently.
     </div>
   </div>
 
@@ -977,6 +1015,7 @@ Source: SeekersGuidance
   let flipCount = 0; let flipData = {};
   let rentalCount = 0; let rentalData = {};
   let cryptoCount = 0; let cryptoData = {};
+  let ownershipType = 'sole';
 
   const fmt = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(val || 0);
 
@@ -1175,25 +1214,14 @@ Source: SeekersGuidance
     const cash = val('cash');
     const tradingStocks = val('tradingStocks');
     const liabilities = getLiabilitiesTotal();
-    const businessCash = val('businessCash');
-    const businessInventory = val('businessInventory');
-    const businessReceivables = val('businessReceivables');
-    const businessLiabilities = val('businessLiabilities');
-
     const longTermZakatable = getLongTermZakatableTotal();
     const retirement401kZakatable = get401kZakatable();
     const flipZakatable = getFlipTotal();
     const rentalZakatable = getRentalTotal();
     const cryptoZakatable = getCryptoTotal();
-    const businessNetZakatable = Math.max(0, businessCash + businessInventory + businessReceivables - businessLiabilities);
+    const businessNetZakatable = getBusinessNetZakatable();
     const priorZakatAmount = getPriorZakat();
-
-    // Update business note
-    const bNote = document.getElementById('businessNote');
-    if (businessCash + businessInventory + businessReceivables > 0) {
-      bNote.style.display = 'block';
-      bNote.textContent = `Net zakatable business assets: ${fmt(businessNetZakatable)} (after deducting ${fmt(businessLiabilities)} in business debts)`;
-    } else { bNote.style.display = 'none'; }
+    updateBusinessNote();
 
     // Per-category zakatable amounts
     const goldZakatable = goldGrams * goldPrice;
@@ -1639,6 +1667,56 @@ Source: SeekersGuidance
 
   function getCryptoTotal() {
     return Object.values(cryptoData).reduce((s, c) => s + (c.value || 0), 0);
+  }
+
+  function setOwnershipType(type) {
+    ownershipType = type;
+    const pctRow = document.getElementById('ownershipPctRow');
+    const btnSole = document.getElementById('btnSoleOwner');
+    const btnPartial = document.getElementById('btnPartialOwner');
+    if (type === 'sole') {
+      pctRow.style.display = 'none';
+      document.getElementById('ownershipPct').value = '100';
+      btnSole.style.border = '1px solid #d4b463'; btnSole.style.background = 'rgba(212,180,99,0.15)'; btnSole.style.color = '#d4b463';
+      btnPartial.style.border = '1px solid rgba(212,180,99,0.2)'; btnPartial.style.background = 'transparent'; btnPartial.style.color = 'rgba(240,230,200,0.4)';
+    } else {
+      pctRow.style.display = 'block';
+      btnPartial.style.border = '1px solid #d4b463'; btnPartial.style.background = 'rgba(212,180,99,0.15)'; btnPartial.style.color = '#d4b463';
+      btnSole.style.border = '1px solid rgba(212,180,99,0.2)'; btnSole.style.background = 'transparent'; btnSole.style.color = 'rgba(240,230,200,0.4)';
+    }
+    updateBusinessNote();
+  }
+
+  function updateBusinessNote() {
+    const businessCash = val('businessCash');
+    const businessInventory = val('businessInventory');
+    const businessReceivables = val('businessReceivables');
+    const businessLiabilities = val('businessLiabilities');
+    const ownershipPct = val('ownershipPct') / 100;
+    const grossZakatable = Math.max(0, businessCash + businessInventory + businessReceivables - businessLiabilities);
+    const yourShare = grossZakatable * ownershipPct;
+    const bNote = document.getElementById('businessNote');
+    if (grossZakatable > 0) {
+      bNote.style.display = 'block';
+      if (ownershipType === 'partial') {
+        const pct = val('ownershipPct');
+        bNote.textContent = `Your ${pct}% share of net zakatable assets: ${fmt(yourShare)} (of ${fmt(grossZakatable)} total)`;
+      } else {
+        bNote.textContent = `Net zakatable business assets: ${fmt(yourShare)} (after deducting ${fmt(businessLiabilities)} in business debts)`;
+      }
+    } else {
+      bNote.style.display = 'none';
+    }
+  }
+
+  function getBusinessNetZakatable() {
+    const businessCash = val('businessCash');
+    const businessInventory = val('businessInventory');
+    const businessReceivables = val('businessReceivables');
+    const businessLiabilities = val('businessLiabilities');
+    const ownershipPct = val('ownershipPct') / 100;
+    const gross = Math.max(0, businessCash + businessInventory + businessReceivables - businessLiabilities);
+    return gross * ownershipPct;
   }
 
   async function importLivePrices() {
