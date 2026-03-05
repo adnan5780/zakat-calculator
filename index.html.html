@@ -744,44 +744,100 @@ Source: SeekersGuidance
         <span class="tooltip-icon">i</span>
         <span class="tooltip-box">Only personal debts due
 within the current lunar year
-can be deducted.
+are deductible.
 
-Business debts are already
-handled in the Business
-Assets section above.
+Mortgage: deduct 12 months
+of principal payments only —
+not the interest portion.
 
-Hanafi school: only
-currently-due portions
-are deductible.</span>
+Business debts handled
+separately above.
+
+Source: SeekersGuidance
+(Hanafi)</span>
       </div>
     </div>
 
     <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:14px; line-height:1.7;">
-      Deducted from your total zakatable wealth before 2.5% is applied. Only include <strong style="color:rgba(212,180,99,0.7);">personal debts due within this lunar year</strong> — business debts are already accounted for in the Business Assets section above.
+      Each item below is deducted from your total zakatable wealth before 2.5% is applied. Only include <strong style="color:rgba(212,180,99,0.7);">personal debts currently due</strong> — business debts are handled in the Business Assets section above.
     </div>
 
-    <div class="sublabel-tag">✅ WHAT TO INCLUDE</div>
-    <div style="font-size:0.72rem; color:rgba(212,180,99,0.4); margin: 6px 0 12px; line-height:1.9;">
-      Credit card balances &nbsp;·&nbsp; Personal loans due this year &nbsp;·&nbsp;
-      Money borrowed from family or friends &nbsp;·&nbsp; Unpaid bills &amp; taxes currently due &nbsp;·&nbsp;
-      This year's mortgage installments (not the full balance)
-    </div>
-
-    <div class="sublabel-tag">✗ WHAT NOT TO INCLUDE</div>
-    <div style="font-size:0.72rem; color:rgba(212,180,99,0.4); margin: 6px 0 14px; line-height:1.9;">
-      Full mortgage balance (only the portion due this year) &nbsp;·&nbsp;
-      Future installments not yet due &nbsp;·&nbsp; Business debts (entered above)
-    </div>
-
+    <!-- Credit Cards -->
     <div class="input-row">
       <div>
-        <div class="input-label">Total personal liabilities</div>
-        <div class="input-sublabel">Sum of all currently-due personal debts</div>
+        <div class="input-label">Credit card balances</div>
+        <div class="input-sublabel">Total outstanding balance across all cards</div>
       </div>
       <div class="input-right">
         <span class="input-prefix">$</span>
-        <input type="number" id="liabilities" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+        <input type="number" id="liab-creditcard" value="0" min="0" oninput="updateLiabilitiesTotal()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
       </div>
+    </div>
+
+    <!-- Mortgage -->
+    <div class="input-row">
+      <div>
+        <div class="input-label">Mortgage — monthly principal</div>
+        <div class="input-sublabel">Principal portion only (exclude interest) — found on your mortgage statement</div>
+      </div>
+      <div class="input-right">
+        <span class="input-prefix">$</span>
+        <input type="number" id="liab-mortgage-monthly" value="0" min="0" oninput="updateLiabilitiesTotal()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+      </div>
+    </div>
+    <div class="lt-note" id="mortgageNote" style="margin-bottom:6px;"></div>
+
+    <!-- Personal Loans -->
+    <div class="input-row">
+      <div>
+        <div class="input-label">Personal loans due this year</div>
+        <div class="input-sublabel">Car loans, student loans, or any installment due within the next 12 months</div>
+      </div>
+      <div class="input-right">
+        <span class="input-prefix">$</span>
+        <input type="number" id="liab-personalloan" value="0" min="0" oninput="updateLiabilitiesTotal()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+      </div>
+    </div>
+
+    <!-- Money owed to people -->
+    <div class="input-row">
+      <div>
+        <div class="input-label">Money owed to family or friends</div>
+        <div class="input-sublabel">Informal debts you are obligated to repay</div>
+      </div>
+      <div class="input-right">
+        <span class="input-prefix">$</span>
+        <input type="number" id="liab-personal" value="0" min="0" oninput="updateLiabilitiesTotal()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+      </div>
+    </div>
+
+    <!-- Unpaid taxes -->
+    <div class="input-row">
+      <div>
+        <div class="input-label">Unpaid taxes & bills</div>
+        <div class="input-sublabel">Tax bills, utility arrears, or any other currently-due obligations</div>
+      </div>
+      <div class="input-right">
+        <span class="input-prefix">$</span>
+        <input type="number" id="liab-taxes" value="0" min="0" oninput="updateLiabilitiesTotal()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+      </div>
+    </div>
+
+    <!-- Catch-all -->
+    <div class="sublabel-tag" style="margin-top:10px;">ANY OTHER PERSONAL DEBTS</div>
+    <div class="input-row">
+      <div>
+        <div class="input-label">Other liabilities</div>
+        <div class="input-sublabel">Any other personal debt currently due that doesn't fit above</div>
+      </div>
+      <div class="input-right">
+        <span class="input-prefix">$</span>
+        <input type="number" id="liab-other" value="0" min="0" oninput="updateLiabilitiesTotal()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+      </div>
+    </div>
+
+    <div class="breakdown-box" id="liabTotalBox" style="display:none;">
+      <span class="breakdown-net" id="liabTotalLine"></span>
     </div>
   </div>
 
@@ -1052,7 +1108,7 @@ are deductible.</span>
     const silverPrice = val('silverPrice');
     const cash = val('cash');
     const tradingStocks = val('tradingStocks');
-    const liabilities = val('liabilities');
+    const liabilities = getLiabilitiesTotal();
     const businessCash = val('businessCash');
     const businessInventory = val('businessInventory');
     const businessReceivables = val('businessReceivables');
@@ -1396,6 +1452,46 @@ are deductible.</span>
 
   function getRentalTotal() {
     return Object.values(rentalData).reduce((s, r) => s + (r.balance || 0), 0);
+  }
+
+  function updateLiabilitiesTotal() {
+    const creditCard = val('liab-creditcard');
+    const mortgageMonthly = val('liab-mortgage-monthly');
+    const annualMortgage = mortgageMonthly * 12;
+    const personalLoan = val('liab-personalloan');
+    const personal = val('liab-personal');
+    const taxes = val('liab-taxes');
+    const other = val('liab-other');
+    const total = creditCard + annualMortgage + personalLoan + personal + taxes + other;
+
+    // Show mortgage annualised note
+    const note = document.getElementById('mortgageNote');
+    if (mortgageMonthly > 0) {
+      note.style.display = 'block';
+      note.textContent = `12 months of principal deducted: ${fmt(annualMortgage)}`;
+    } else {
+      note.style.display = 'none';
+    }
+
+    // Show total box
+    const box = document.getElementById('liabTotalBox');
+    const line = document.getElementById('liabTotalLine');
+    if (total > 0) {
+      box.style.display = 'block';
+      line.textContent = `Total personal liabilities deducted: ${fmt(total)}`;
+    } else {
+      box.style.display = 'none';
+    }
+  }
+
+  function getLiabilitiesTotal() {
+    const creditCard = val('liab-creditcard');
+    const annualMortgage = val('liab-mortgage-monthly') * 12;
+    const personalLoan = val('liab-personalloan');
+    const personal = val('liab-personal');
+    const taxes = val('liab-taxes');
+    const other = val('liab-other');
+    return creditCard + annualMortgage + personalLoan + personal + taxes + other;
   }
 
   async function importLivePrices() {
