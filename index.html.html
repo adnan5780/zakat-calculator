@@ -609,26 +609,109 @@ Per Fiqh Council of North America.</span>
     <!-- Method 2 -->
     <div id="method2Section">
       <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.6;">
-        Zakat calculated on what you'd receive if you withdrew today — after the 10% early withdrawal penalty and income taxes.
+        Zakat calculated on what you'd receive if you withdrew today — after the 10% early withdrawal penalty and income taxes. This is a <strong style="color:rgba(212,180,99,0.7);">hypothetical scenario for zakat calculation only</strong> — not an actual withdrawal or tax event.
       </div>
+
+      <!-- 401k balance -->
       <div class="input-row">
-        <div><div class="input-label">401(k) balance</div></div>
+        <div><div class="input-label">401(k) / IRA balance</div></div>
         <div class="input-right">
           <span class="input-prefix">$</span>
-          <input type="number" id="balance401k" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+          <input type="number" id="balance401k" value="0" min="0" oninput="compute401kTax()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
         </div>
       </div>
+
+      <!-- Tax info mode toggle -->
+      <div style="margin:14px 0 10px;">
+        <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:8px;">How would you like to enter your income?</div>
+        <div style="display:flex; gap:10px;">
+          <button id="btnTaxReturn" onclick="setTaxMode('return')" style="
+            flex:1; padding:9px 6px; border-radius:10px;
+            border:1px solid #d4b463; background:rgba(212,180,99,0.15);
+            color:#d4b463; cursor:pointer; transition:all 0.2s;
+            font-family:'Cormorant Garamond',serif; font-size:0.82rem; line-height:1.5;">
+            📄 I have my tax return<br/><span style="font-size:0.72rem; opacity:0.7;">Use AGI from Form 1040</span>
+          </button>
+          <button id="btnEstimate" onclick="setTaxMode('estimate')" style="
+            flex:1; padding:9px 6px; border-radius:10px;
+            border:1px solid rgba(212,180,99,0.2); background:transparent;
+            color:rgba(240,230,200,0.4); cursor:pointer; transition:all 0.2s;
+            font-family:'Cormorant Garamond',serif; font-size:0.82rem; line-height:1.5;">
+            ✏️ I'm estimating<br/><span style="font-size:0.72rem; opacity:0.7;">Enter gross income</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filing status (shared) -->
       <div class="input-row">
         <div>
-          <div class="input-label">Your tax rate</div>
-          <div class="input-sublabel">e.g. 22 for 22% bracket</div>
+          <div class="input-label">Filing status</div>
         </div>
-        <div class="input-right">
-          <span class="input-prefix">%</span>
-          <input type="number" id="taxRate401k" value="22" min="0" max="100" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+        <div class="input-right" style="min-width:170px;">
+          <select id="filingStatus" onchange="compute401kTax()" style="
+            background:rgba(20,15,10,0.8); border:1px solid rgba(212,180,99,0.25);
+            color:rgba(240,230,200,0.75); padding:8px 10px; border-radius:8px;
+            font-family:'Cormorant Garamond',serif; font-size:0.88rem; width:100%;">
+            <option value="single">Single</option>
+            <option value="mfj" selected>Married Filing Jointly</option>
+            <option value="hoh">Head of Household</option>
+          </select>
         </div>
       </div>
-      <div class="breakdown-box" id="breakdownBox">
+
+      <!-- State -->
+      <div class="input-row">
+        <div>
+          <div class="input-label">State</div>
+        </div>
+        <div class="input-right" style="min-width:170px;">
+          <select id="stateSelect" onchange="compute401kTax()" style="
+            background:rgba(20,15,10,0.8); border:1px solid rgba(212,180,99,0.25);
+            color:rgba(240,230,200,0.75); padding:8px 10px; border-radius:8px;
+            font-family:'Cormorant Garamond',serif; font-size:0.88rem; width:100%;">
+            <option value="none">No state income tax</option>
+            <option value="nj" selected>New Jersey</option>
+            <option value="ny">New York</option>
+            <option value="ct">Connecticut</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tax return mode: AGI input -->
+      <div id="taxReturnFields">
+        <div class="input-row">
+          <div>
+            <div class="input-label">Adjusted Gross Income (AGI)</div>
+            <div class="input-sublabel">Line 11 on your Form 1040 — already reflects your actual deductions and adjustments</div>
+          </div>
+          <div class="input-right">
+            <span class="input-prefix">$</span>
+            <input type="number" id="agi401k" value="0" min="0" oninput="compute401kTax()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estimate mode: gross income input -->
+      <div id="estimateFields" style="display:none;">
+        <div class="input-row">
+          <div>
+            <div class="input-label">Estimated gross annual income</div>
+            <div class="input-sublabel">Your expected household income before taxes this year — standard deduction will be applied automatically</div>
+          </div>
+          <div class="input-right">
+            <span class="input-prefix">$</span>
+            <input type="number" id="grossIncome401k" value="0" min="0" oninput="compute401kTax()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Smart breakdown -->
+      <div id="smartTaxBreakdown" style="display:none; margin-top:14px; background:rgba(212,180,99,0.04); border:1px solid rgba(212,180,99,0.15); border-radius:12px; padding:14px 16px;">
+        <div style="font-family:'Cormorant Garamond',serif; font-size:0.78rem; color:rgba(212,180,99,0.5); letter-spacing:0.06em; margin-bottom:10px;">TAX BREAKDOWN (HYPOTHETICAL)</div>
+        <div id="smartTaxLines" style="font-size:0.77rem; color:rgba(240,230,200,0.45); line-height:2.1;"></div>
+      </div>
+
+      <div class="breakdown-box" id="breakdownBox" style="display:none;">
         <span id="penaltyLine"></span><br/>
         <span id="taxLine"></span><br/>
         <span class="breakdown-net" id="netLine"></span>
@@ -1466,11 +1549,7 @@ Source: SeekersGuidance
     if (current401kMethod === 1) {
       return Object.values(fund401kData).reduce((sum, f) => sum + (f.zakatableValue || 0), 0);
     } else {
-      const balance = val('balance401k');
-      const taxRate = val('taxRate401k');
-      const penalty = balance * EARLY_WITHDRAWAL_PENALTY;
-      const taxDed = balance * (taxRate / 100);
-      return Math.max(0, balance - penalty - taxDed);
+      return computed401kZakatable;
     }
   }
 
@@ -1717,6 +1796,188 @@ Source: SeekersGuidance
     const ownershipPct = val('ownershipPct') / 100;
     const gross = Math.max(0, businessCash + businessInventory + businessReceivables - businessLiabilities);
     return gross * ownershipPct;
+  }
+
+  // ============================================================
+  // SMART 401K TAX CALCULATOR
+  // ============================================================
+
+  let taxMode = 'return'; // 'return' or 'estimate'
+  let computed401kZakatable = 0;
+
+  // 2025 Federal brackets [ceiling, rate]
+  const FED_BRACKETS = {
+    single: [
+      [11925, 0.10], [48475, 0.12], [103350, 0.22],
+      [197300, 0.24], [250525, 0.32], [626350, 0.35], [Infinity, 0.37]
+    ],
+    mfj: [
+      [23850, 0.10], [96950, 0.12], [206700, 0.22],
+      [394600, 0.24], [501050, 0.32], [751600, 0.35], [Infinity, 0.37]
+    ],
+    hoh: [
+      [17000, 0.10], [64850, 0.12], [103350, 0.22],
+      [197300, 0.24], [250500, 0.32], [626350, 0.35], [Infinity, 0.37]
+    ]
+  };
+
+  // 2025 Standard deductions
+  const STD_DEDUCTION = { single: 15750, mfj: 31500, hoh: 22500 };
+
+  // 2025 State brackets [ceiling, rate] — married filing jointly / single
+  const STATE_BRACKETS = {
+    nj: {
+      single: [
+        [20000, 0.014], [35000, 0.0175], [40000, 0.035],
+        [75000, 0.05525], [500000, 0.0637], [1000000, 0.0897], [Infinity, 0.1075]
+      ],
+      mfj: [
+        [20000, 0.014], [50000, 0.0175], [70000, 0.035],
+        [80000, 0.05525], [150000, 0.0637], [500000, 0.0897], [Infinity, 0.1075]
+      ],
+      hoh: [
+        [20000, 0.014], [50000, 0.0175], [70000, 0.035],
+        [80000, 0.05525], [150000, 0.0637], [500000, 0.0897], [Infinity, 0.1075]
+      ]
+    },
+    ny: {
+      single: [
+        [17150, 0.04], [23600, 0.045], [27900, 0.0525],
+        [161550, 0.055], [323200, 0.06], [2155350, 0.0685],
+        [5000000, 0.0965], [25000000, 0.103], [Infinity, 0.109]
+      ],
+      mfj: [
+        [27900, 0.04], [23600, 0.045], [43000, 0.0525],
+        [161550, 0.055], [323200, 0.06], [2155350, 0.0685],
+        [5000000, 0.0965], [25000000, 0.103], [Infinity, 0.109]
+      ],
+      hoh: [
+        [17650, 0.04], [23600, 0.045], [27900, 0.0525],
+        [161550, 0.055], [323200, 0.06], [2155350, 0.0685],
+        [5000000, 0.0965], [25000000, 0.103], [Infinity, 0.109]
+      ]
+    },
+    ct: {
+      single: [
+        [10000, 0.02], [50000, 0.045], [100000, 0.055],
+        [200000, 0.06], [250000, 0.065], [500000, 0.069], [Infinity, 0.0699]
+      ],
+      mfj: [
+        [20000, 0.02], [100000, 0.045], [200000, 0.055],
+        [400000, 0.06], [500000, 0.065], [1000000, 0.069], [Infinity, 0.0699]
+      ],
+      hoh: [
+        [16000, 0.02], [80000, 0.045], [160000, 0.055],
+        [320000, 0.06], [400000, 0.065], [800000, 0.069], [Infinity, 0.0699]
+      ]
+    },
+    none: { single: [], mfj: [], hoh: [] }
+  };
+
+  function calcTaxFromBrackets(income, brackets) {
+    let tax = 0, prev = 0;
+    for (const [ceiling, rate] of brackets) {
+      if (income <= prev) break;
+      tax += (Math.min(income, ceiling) - prev) * rate;
+      prev = ceiling;
+    }
+    return tax;
+  }
+
+  function setTaxMode(mode) {
+    taxMode = mode;
+    document.getElementById('taxReturnFields').style.display = mode === 'return' ? 'block' : 'none';
+    document.getElementById('estimateFields').style.display = mode === 'estimate' ? 'block' : 'none';
+    const btnReturn = document.getElementById('btnTaxReturn');
+    const btnEst = document.getElementById('btnEstimate');
+    if (mode === 'return') {
+      btnReturn.style.border = '1px solid #d4b463'; btnReturn.style.background = 'rgba(212,180,99,0.15)'; btnReturn.style.color = '#d4b463';
+      btnEst.style.border = '1px solid rgba(212,180,99,0.2)'; btnEst.style.background = 'transparent'; btnEst.style.color = 'rgba(240,230,200,0.4)';
+    } else {
+      btnEst.style.border = '1px solid #d4b463'; btnEst.style.background = 'rgba(212,180,99,0.15)'; btnEst.style.color = '#d4b463';
+      btnReturn.style.border = '1px solid rgba(212,180,99,0.2)'; btnReturn.style.background = 'transparent'; btnReturn.style.color = 'rgba(240,230,200,0.4)';
+    }
+    compute401kTax();
+  }
+
+  function compute401kTax() {
+    const balance = val('balance401k');
+    const filingStatus = document.getElementById('filingStatus').value;
+    const stateKey = document.getElementById('stateSelect').value;
+    const breakdown = document.getElementById('smartTaxBreakdown');
+    const linesEl = document.getElementById('smartTaxLines');
+
+    if (balance <= 0) {
+      breakdown.style.display = 'none';
+      computed401kZakatable = 0;
+      return;
+    }
+
+    // Derive taxable income
+    let taxableIncome, stdDedApplied = false, grossEntered = 0;
+    if (taxMode === 'return') {
+      taxableIncome = val('agi401k');
+    } else {
+      grossEntered = val('grossIncome401k');
+      const stdDed = STD_DEDUCTION[filingStatus] || 15750;
+      taxableIncome = Math.max(0, grossEntered - stdDed);
+      stdDedApplied = true;
+    }
+
+    if (taxableIncome <= 0 && taxMode === 'return') {
+      breakdown.style.display = 'none';
+      computed401kZakatable = 0;
+      return;
+    }
+
+    const fedBrackets = FED_BRACKETS[filingStatus];
+    const stateBrackets = (STATE_BRACKETS[stateKey] || STATE_BRACKETS.none)[filingStatus] || [];
+
+    // Federal tax on existing income vs income + withdrawal
+    const fedTaxBase = calcTaxFromBrackets(taxableIncome, fedBrackets);
+    const fedTaxWith = calcTaxFromBrackets(taxableIncome + balance, fedBrackets);
+    const fedTaxOnWithdrawal = fedTaxWith - fedTaxBase;
+    const fedEffRate = balance > 0 ? (fedTaxOnWithdrawal / balance) * 100 : 0;
+
+    // State tax
+    const stateTaxBase = calcTaxFromBrackets(taxableIncome, stateBrackets);
+    const stateTaxWith = calcTaxFromBrackets(taxableIncome + balance, stateBrackets);
+    const stateTaxOnWithdrawal = stateTaxWith - stateTaxBase;
+    const stateEffRate = balance > 0 ? (stateTaxOnWithdrawal / balance) * 100 : 0;
+
+    // Penalty
+    const penalty = balance * 0.10;
+    const totalTax = fedTaxOnWithdrawal + stateTaxOnWithdrawal;
+    const netZakatable = Math.max(0, balance - penalty - totalTax);
+    computed401kZakatable = netZakatable;
+
+    const stateNames = { nj: 'NJ', ny: 'NY', ct: 'CT', none: 'State' };
+    const stateName = stateNames[stateKey] || '';
+
+    // Build lines
+    let lines = '';
+    if (stdDedApplied) {
+      lines += `<div>Gross income entered: <span style="color:rgba(212,180,99,0.7);">${fmt(grossEntered)}</span></div>`;
+      lines += `<div>Standard deduction (${filingStatus === 'mfj' ? 'MFJ' : filingStatus === 'hoh' ? 'HOH' : 'Single'}): <span style="color:rgba(212,180,99,0.5);">− ${fmt(STD_DEDUCTION[filingStatus])}</span></div>`;
+      lines += `<div style="border-top:1px solid rgba(212,180,99,0.1); margin:4px 0;"></div>`;
+    }
+    lines += `<div>Your taxable income (excl. 401k): <span style="color:rgba(212,180,99,0.7);">${fmt(taxableIncome)}</span>${taxMode === 'return' ? ' <span style="font-size:0.68rem; opacity:0.5;">(AGI from Form 1040)</span>' : ''}</div>`;
+    lines += `<div>401(k) hypothetical withdrawal: <span style="color:rgba(212,180,99,0.7);">+ ${fmt(balance)}</span></div>`;
+    lines += `<div style="border-top:1px solid rgba(212,180,99,0.1); margin:4px 0;"></div>`;
+    lines += `<div>10% early withdrawal penalty: <span style="color:rgba(255,120,120,0.7);">− ${fmt(penalty)}</span></div>`;
+    lines += `<div>Federal tax on withdrawal (${fedEffRate.toFixed(1)}% effective): <span style="color:rgba(255,120,120,0.7);">− ${fmt(fedTaxOnWithdrawal)}</span></div>`;
+    if (stateKey !== 'none') {
+      lines += `<div>${stateName} state tax on withdrawal (${stateEffRate.toFixed(1)}% effective): <span style="color:rgba(255,120,120,0.7);">− ${fmt(stateTaxOnWithdrawal)}</span></div>`;
+    }
+    lines += `<div style="border-top:1px solid rgba(212,180,99,0.2); margin:6px 0 2px;"></div>`;
+    lines += `<div style="font-weight:600; color:rgba(212,180,99,0.85);">Net zakatable amount: ${fmt(netZakatable)}</div>`;
+    lines += `<div style="font-size:0.7rem; color:rgba(212,180,99,0.3); margin-top:4px;">Zakat due (2.5%): ${fmt(netZakatable * 0.025)}</div>`;
+    if (taxMode === 'estimate') {
+      lines += `<div style="font-size:0.68rem; color:rgba(212,180,99,0.25); margin-top:6px;">⚠ Estimated — based on standard deduction. For greater accuracy, use your AGI from Form 1040.</div>`;
+    }
+
+    linesEl.innerHTML = lines;
+    breakdown.style.display = 'block';
   }
 
   async function importLivePrices() {
