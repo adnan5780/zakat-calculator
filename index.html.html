@@ -584,41 +584,154 @@ Per Fiqh Council of North America.</span>
     </div>
   </div>
 
-  <!-- Business -->
+  <!-- Real Estate - Flipping -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🏚️</span>
+      <span class="card-title">Real Estate — Flipping</span>
+      <div class="tooltip-wrap">
+        <span class="tooltip-icon">i</span>
+        <span class="tooltip-box">Property bought with intent
+to resell is treated as
+trade goods.
+
+Formula:
+Market value × 2.5%
+
+Source: SeekersGuidance
+(Hanafi)</span>
+      </div>
+    </div>
+    <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.6;">
+      Properties purchased with the <strong style="color:rgba(212,180,99,0.7);">firm intention to sell</strong> are treated as trade goods — the full current market value is zakatable at 2.5%. This does not apply to your primary residence or properties held for rental.
+    </div>
+    <div id="flipList"></div>
+    <button onclick="addFlipProperty()" style="
+      width:100%; margin-top:6px; padding:9px;
+      background:transparent; border:1px dashed rgba(212,180,99,0.25);
+      border-radius:10px; color:rgba(212,180,99,0.55);
+      font-family:'Cormorant Garamond',serif; font-size:0.9rem;
+      cursor:pointer; transition:all 0.2s;"
+      onmouseover="this.style.borderColor='rgba(212,180,99,0.6)';this.style.color='#d4b463'"
+      onmouseout="this.style.borderColor='rgba(212,180,99,0.25)';this.style.color='rgba(212,180,99,0.55)'">
+      + Add Property
+    </button>
+    <div id="flipTotal" style="display:none; margin-top:12px; padding:10px 14px;
+      background:rgba(212,180,99,0.05); border-radius:10px;
+      font-size:0.78rem; color:rgba(212,180,99,0.55); line-height:1.9;"></div>
+  </div>
+
+  <!-- Real Estate - Rental -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🏠</span>
+      <span class="card-title">Real Estate — Rental Income</span>
+      <div class="tooltip-wrap">
+        <span class="tooltip-icon">i</span>
+        <span class="tooltip-box">In the Hanafi school, zakat
+is due on net rental cash
+you hold on your zakat date —
+not on the property itself.
+
+Formula:
+Rental account balance × 2.5%
+
+Source: SeekersGuidance
+(Hanafi)</span>
+      </div>
+    </div>
+    <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:12px; line-height:1.6;">
+      The rental property itself is <strong style="color:rgba(212,180,99,0.7);">not zakatable</strong> — only the cash it generates. Enter the balance of your dedicated rental account on your zakat due date. This balance already reflects all rent received minus all expenses paid (mortgage, maintenance, taxes, repairs). If rental income mixes with personal funds, enter your best estimate of net rental cash on hand.
+    </div>
+    <div id="rentalList"></div>
+    <button onclick="addRentalProperty()" style="
+      width:100%; margin-top:6px; padding:9px;
+      background:transparent; border:1px dashed rgba(212,180,99,0.25);
+      border-radius:10px; color:rgba(212,180,99,0.55);
+      font-family:'Cormorant Garamond',serif; font-size:0.9rem;
+      cursor:pointer; transition:all 0.2s;"
+      onmouseover="this.style.borderColor='rgba(212,180,99,0.6)';this.style.color='#d4b463'"
+      onmouseout="this.style.borderColor='rgba(212,180,99,0.25)';this.style.color='rgba(212,180,99,0.55)'">
+      + Add Rental Property
+    </button>
+    <div id="rentalTotal" style="display:none; margin-top:12px; padding:10px 14px;
+      background:rgba(212,180,99,0.05); border-radius:10px;
+      font-size:0.78rem; color:rgba(212,180,99,0.55); line-height:1.9;"></div>
+  </div>
+
+  <!-- General Business -->
   <div class="card">
     <div class="card-header">
       <span class="card-icon">📊</span>
-      <span class="card-title">Business & Receivables</span>
+      <span class="card-title">Business Assets</span>
       <div class="tooltip-wrap">
         <span class="tooltip-icon">i</span>
-        <span class="tooltip-box">Business assets: inventory
-and trade goods at full value.
+        <span class="tooltip-box">Zakatable = cash + inventory
++ receivables − business debts.
 
-Receivables: money owed
-to you, expected to be paid.
+Fixed assets (equipment,
+vehicles, property) are
+NOT zakatable.
 
-Both added at full value.</span>
+Formula:
+Net zakatable assets × 2.5%
+
+Source: SeekersGuidance
+(Hanafi)</span>
+      </div>
+    </div>
+    <div style="font-size:0.72rem; color:rgba(212,180,99,0.45); margin-bottom:4px; line-height:1.6;">
+      Only <strong style="color:rgba(212,180,99,0.7);">current/liquid assets</strong> are zakatable. Fixed assets used to run the business are not.
+    </div>
+
+    <!-- Cash -->
+    <div class="sublabel-tag" style="margin-top:10px;">ZAKATABLE ASSETS</div>
+    <div class="input-row">
+      <div>
+        <div class="input-label">Business cash & bank balances</div>
+        <div class="input-sublabel">e.g. operating account, petty cash</div>
+      </div>
+      <div class="input-right">
+        <span class="input-prefix">$</span>
+        <input type="number" id="businessCash" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
       </div>
     </div>
     <div class="input-row">
       <div>
-        <div class="input-label">Business assets</div>
-        <div class="input-sublabel">Inventory, goods, trade stock</div>
+        <div class="input-label">Inventory & trade goods</div>
+        <div class="input-sublabel">e.g. products for sale, raw materials, wholesale stock — at current market value</div>
       </div>
       <div class="input-right">
         <span class="input-prefix">$</span>
-        <input type="number" id="businessAssets" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+        <input type="number" id="businessInventory" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
       </div>
     </div>
     <div class="input-row">
       <div>
-        <div class="input-label">Money owed to you</div>
-        <div class="input-sublabel">Expected to be repaid</div>
+        <div class="input-label">Receivables</div>
+        <div class="input-sublabel">e.g. invoices outstanding, money customers owe you that you reasonably expect to collect</div>
       </div>
       <div class="input-right">
         <span class="input-prefix">$</span>
-        <input type="number" id="receivables" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+        <input type="number" id="businessReceivables" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
       </div>
+    </div>
+
+    <!-- Business debts -->
+    <div class="sublabel-tag" style="margin-top:10px;">BUSINESS DEBTS (DEDUCTED)</div>
+    <div class="input-row">
+      <div>
+        <div class="input-label">Short-term business liabilities</div>
+        <div class="input-sublabel">e.g. supplier invoices due, business loans due within the year, outstanding payroll</div>
+      </div>
+      <div class="input-right">
+        <span class="input-prefix">$</span>
+        <input type="number" id="businessLiabilities" value="0" min="0" oninput="calculate()" onfocus="clearZero(this)" onblur="restoreZero(this)"/>
+      </div>
+    </div>
+    <div class="lt-note" id="businessNote" style="display:none;"></div>
+    <div style="font-size:0.7rem; color:rgba(212,180,99,0.3); margin-top:10px; line-height:1.7;">
+      ✗ Not zakatable: office equipment, machinery, vehicles, property, furniture, software licenses — fixed assets used to operate the business.
     </div>
   </div>
 
@@ -694,6 +807,13 @@ can also be entered here.</span>
           fiqhcouncil.org/zakah-on-stocks
         </a>
       </div>
+      <div style="margin-top:8px;">📖 <span style="color:rgba(240,230,200,0.55);">Zakat on Real Estate & Business Assets</span> — SeekersGuidance (Hanafi)<br/>
+        <a href="https://seekersguidance.org/answers/hanafi-fiqh/zakat-on-property-and-business/" target="_blank" rel="noopener noreferrer"
+          style="color:rgba(212,180,99,0.5); font-size:0.72rem; word-break:break-all; text-decoration:none;"
+          onmouseover="this.style.color='#d4b463'" onmouseout="this.style.color='rgba(212,180,99,0.5)'">
+          seekersguidance.org
+        </a>
+      </div>
     </div>
   </div>
 
@@ -710,6 +830,8 @@ can also be entered here.</span>
   let fund401kCount = 0;
   let fund401kData = {}; // { id: { symbol, balance, zakatableValue } }
   let current401kMethod = 2;
+  let flipCount = 0; let flipData = {};
+  let rentalCount = 0; let rentalData = {};
 
   const fmt = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(val || 0);
 
@@ -907,12 +1029,24 @@ can also be entered here.</span>
     const silverPrice = val('silverPrice');
     const cash = val('cash');
     const tradingStocks = val('tradingStocks');
-    const businessAssets = val('businessAssets');
-    const receivables = val('receivables');
     const liabilities = val('liabilities');
+    const businessCash = val('businessCash');
+    const businessInventory = val('businessInventory');
+    const businessReceivables = val('businessReceivables');
+    const businessLiabilities = val('businessLiabilities');
 
     const longTermZakatable = getLongTermZakatableTotal();
     const retirement401kZakatable = get401kZakatable();
+    const flipZakatable = getFlipTotal();
+    const rentalZakatable = getRentalTotal();
+    const businessNetZakatable = Math.max(0, businessCash + businessInventory + businessReceivables - businessLiabilities);
+
+    // Update business note
+    const bNote = document.getElementById('businessNote');
+    if (businessCash + businessInventory + businessReceivables > 0) {
+      bNote.style.display = 'block';
+      bNote.textContent = `Net zakatable business assets: ${fmt(businessNetZakatable)} (after deducting ${fmt(businessLiabilities)} in business debts)`;
+    } else { bNote.style.display = 'none'; }
 
     // Per-category zakatable amounts
     const goldZakatable = goldGrams * goldPrice;
@@ -920,8 +1054,7 @@ can also be entered here.</span>
     const cashZakatable = cash;
     const tradingZakatable = tradingStocks;
     const longTermZakatableAmt = longTermZakatable;
-    const businessZakatable = businessAssets;
-    const receivablesZakatable = receivables;
+
 
     // Per-category zakat due
     const categories = [
@@ -931,8 +1064,9 @@ can also be entered here.</span>
       { label: 'Trading Stocks',        zakatable: tradingZakatable },
       { label: 'Long-term Stocks',      zakatable: longTermZakatableAmt },
       { label: '401(k)',                zakatable: retirement401kZakatable },
-      { label: 'Business Assets',       zakatable: businessZakatable },
-      { label: 'Receivables',           zakatable: receivablesZakatable },
+      { label: 'Property (Flipping)',    zakatable: flipZakatable },
+      { label: 'Rental Income',         zakatable: rentalZakatable },
+      { label: 'Business Assets',       zakatable: businessNetZakatable },
     ];
 
     const totalAssets = categories.reduce((s, c) => s + c.zakatable, 0);
@@ -1138,6 +1272,107 @@ can also be entered here.</span>
       const taxDed = balance * (taxRate / 100);
       return Math.max(0, balance - penalty - taxDed);
     }
+  }
+
+  // --- Flip properties ---
+  function addFlipProperty() {
+    flipCount++;
+    const id = flipCount;
+    flipData[id] = { label: '', value: 0 };
+    const div = document.createElement('div');
+    div.className = 'ticker-row';
+    div.id = `flip-${id}`;
+    div.innerHTML = `
+      <div class="ticker-top">
+        <input class="ticker-input" style="flex:1;" type="text" placeholder="Property description (e.g. 123 Main St)"
+          id="flip-label-${id}" oninput="flipData[${id}].label = this.value;" />
+        <button class="ticker-remove" onclick="removeFlip(${id})">×</button>
+      </div>
+      <div class="input-row" style="margin-top:8px;">
+        <div><div class="input-label">Current market value</div></div>
+        <div class="input-right">
+          <span class="input-prefix">$</span>
+          <input class="ticker-input" style="width:130px; text-align:right;" type="number" placeholder="0" min="0"
+            id="flip-value-${id}"
+            oninput="flipData[${id}].value = parseFloat(this.value)||0; updateFlipTotal();"
+            onfocus="if(this.value==='0') this.value='';"
+            onblur="if(this.value==='') this.value='0';" />
+        </div>
+      </div>
+    `;
+    document.getElementById('flipList').appendChild(div);
+  }
+
+  function removeFlip(id) {
+    delete flipData[id];
+    const el = document.getElementById(`flip-${id}`);
+    if (el) el.remove();
+    updateFlipTotal();
+  }
+
+  function updateFlipTotal() {
+    const total = Object.values(flipData).reduce((s, f) => s + (f.value || 0), 0);
+    const el = document.getElementById('flipTotal');
+    if (total > 0) {
+      el.style.display = 'block';
+      el.innerHTML = `Total zakatable (flipping): <span style="color:rgba(212,180,99,0.85); font-weight:600;">${fmt(total)}</span>`;
+    } else { el.style.display = 'none'; }
+  }
+
+  function getFlipTotal() {
+    return Object.values(flipData).reduce((s, f) => s + (f.value || 0), 0);
+  }
+
+  // --- Rental properties ---
+  function addRentalProperty() {
+    rentalCount++;
+    const id = rentalCount;
+    rentalData[id] = { label: '', balance: 0 };
+    const div = document.createElement('div');
+    div.className = 'ticker-row';
+    div.id = `rental-${id}`;
+    div.innerHTML = `
+      <div class="ticker-top">
+        <input class="ticker-input" style="flex:1;" type="text" placeholder="Property description (e.g. 456 Oak Ave)"
+          id="rental-label-${id}" oninput="rentalData[${id}].label = this.value;" />
+        <button class="ticker-remove" onclick="removeRental(${id})">×</button>
+      </div>
+      <div class="input-row" style="margin-top:8px;">
+        <div>
+          <div class="input-label">Rental account balance on zakat date</div>
+          <div class="input-sublabel">Net of all expenses already paid</div>
+        </div>
+        <div class="input-right">
+          <span class="input-prefix">$</span>
+          <input class="ticker-input" style="width:130px; text-align:right;" type="number" placeholder="0" min="0"
+            id="rental-balance-${id}"
+            oninput="rentalData[${id}].balance = parseFloat(this.value)||0; updateRentalTotal();"
+            onfocus="if(this.value==='0') this.value='';"
+            onblur="if(this.value==='') this.value='0';" />
+        </div>
+      </div>
+    `;
+    document.getElementById('rentalList').appendChild(div);
+  }
+
+  function removeRental(id) {
+    delete rentalData[id];
+    const el = document.getElementById(`rental-${id}`);
+    if (el) el.remove();
+    updateRentalTotal();
+  }
+
+  function updateRentalTotal() {
+    const total = Object.values(rentalData).reduce((s, r) => s + (r.balance || 0), 0);
+    const el = document.getElementById('rentalTotal');
+    if (total > 0) {
+      el.style.display = 'block';
+      el.innerHTML = `Total zakatable (rental): <span style="color:rgba(212,180,99,0.85); font-weight:600;">${fmt(total)}</span>`;
+    } else { el.style.display = 'none'; }
+  }
+
+  function getRentalTotal() {
+    return Object.values(rentalData).reduce((s, r) => s + (r.balance || 0), 0);
   }
 
   async function importLivePrices() {
