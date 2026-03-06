@@ -2070,7 +2070,7 @@ Source: SeekersGuidance
         `;
       } else {
         // Fallback to Method 2: balance minus penalty and taxes
-        const taxRate = val('taxRate401k') || 22;
+        const taxRate = window._lastEffective401kRate || 22; // uses smart tax rate if computed, else defaults to 22%
         const penalty = balance * EARLY_WITHDRAWAL_PENALTY;
         const taxDed = balance * (taxRate / 100);
         zakatableValue = Math.max(0, balance - penalty - taxDed);
@@ -2463,11 +2463,15 @@ Source: SeekersGuidance
     }
   }
 
-  // Attach progress tracking to all number inputs on the page
-  // Called once on page load — picks up any input and reruns updateProgress on change
+  // Attach progress tracking via event delegation on the container
+  // This catches dynamically added inputs (crypto, flipping, rental, loans)
+  // that don't exist at page load time
   function initProgress() {
-    document.querySelectorAll('input[type=number], input[type=text]').forEach(input => {
-      input.addEventListener('input', updateProgress);
+    const container = document.querySelector('.container') || document.body;
+    container.addEventListener('input', function(e) {
+      if (e.target.matches('input[type=number], input[type=text]')) {
+        updateProgress();
+      }
     });
     updateProgress(); // run once on load
   }
@@ -2567,6 +2571,9 @@ Source: SeekersGuidance
     const totalTax = fedTaxOnWithdrawal + stateTaxOnWithdrawal;
     const netZakatable = Math.max(0, balance - penalty - totalTax);
     computed401kZakatable = netZakatable;
+    // Store combined effective rate for use in ticker method-2 fallback
+    const totalEffRate = balance > 0 ? ((totalTax / balance) * 100) : 22;
+    window._lastEffective401kRate = Math.round(totalEffRate);
 
     const stateData2 = STATE_BRACKETS[stateKey];
     const stateName = stateData2 ? stateData2.name.replace(/ \(No Income Tax\)/,'') : '';
@@ -2797,33 +2804,39 @@ Source: SeekersGuidance
       y += 12;
     }
 
-    // Fixed column positions (in pts from left edge):
-    // Col 1 (label):  MARGIN+4  to  360   — 308pt wide
-    // Col 2 (middle): 361       to  460   — 99pt wide, right-aligned
-    // Col 3 (value):  461       to  W-MARGIN-4 — right-aligned
-    const COL1_MAX = 360; // max x for label text
-    const COL2_X   = 455; // right edge of middle column
-    const COL3_X   = W - MARGIN - 4; // right edge of value column
+    // ── Column layout (US Letter = 612pt wide, margins 48pt each side)
+    // Content width = 612 - 96 = 516pt
+    // Col 1 label:   x = 52,        max width = 260pt
+    // Col 2 tag:     right edge at  x = 390pt  (e.g. "deducted")
+    // Col 3 value:   right edge at  x = 564pt  (right-aligned dollar amounts)
+    // Minimum gap between col2 and col3 = 564-390 = 174pt — plenty of room
+    const C1_X   = MARGIN + 4;   // label left edge
+    const C1_MAX = 260;           // max label width before truncation
+    const C2_X   = 390;           // tag right edge
+    const C3_X   = W - MARGIN;   // value right edge
 
-    function row(label, middle, value, labelColor, valueColor, bg) {
-      checkPage(22);
-      if (bg) { setFill(bg); doc.rect(MARGIN, y - 12, COL, 18, 'F'); }
-      doc.setFontSize(9);
-      // Label — truncate if too long to avoid overlap
-      const maxLabelWidth = COL1_MAX - MARGIN - 4;
+    const ROW_H  = 20;            // row height in pts
+    const ROW_PAD = 14;           // baseline offset inside row
+
+    function row(label, tag, value, labelColor, valueColor, bg) {
+      checkPage(ROW_H + 4);
+      if (bg) { setFill(bg); doc.rect(MARGIN, y, COL, ROW_H, 'F'); }
+      const base = y + ROW_PAD;
+      // Label
+      doc.setFontSize(9); doc.setFont('helvetica', 'normal');
       setColor(labelColor || DARK);
-      doc.text(label, MARGIN + 4, y, { maxWidth: maxLabelWidth });
-      // Middle tag (e.g. "deducted") — right-aligned in col 2
-      if (middle) {
+      doc.text(label, C1_X, base, { maxWidth: C1_MAX });
+      // Tag (e.g. "deducted") — smaller, muted, right edge of col 2
+      if (tag) {
+        doc.setFontSize(7.5);
         setColor(GRAY);
-        doc.setFontSize(8);
-        doc.text(middle, COL2_X, y, { align: 'right' });
-        doc.setFontSize(9);
+        doc.text(tag, C2_X, base, { align: 'right' });
       }
       // Value — right-aligned in col 3
+      doc.setFontSize(9);
       setColor(valueColor || DARK);
-      doc.text(value, COL3_X, y, { align: 'right' });
-      y += 18;
+      doc.text(value, C3_X, base, { align: 'right' });
+      y += ROW_H;
     }
 
     // ── Page 1 title block ──────────────────────────────────────
@@ -2915,17 +2928,17 @@ Source: SeekersGuidance
       doc.setFont('helvetica', 'normal');
     }
 
-    y += 14;
+    y += 6;
     checkPage(30);
     const eligColor = eligible ? [40,120,40] : [160,40,40];
     const eligBg    = eligible ? [230,245,230] : [245,230,230];
-    setFill(eligBg); doc.rect(MARGIN, y-10, COL, 22, 'F');
+    setFill(eligBg); doc.rect(MARGIN, y, COL, ROW_H + 4, 'F');
     doc.setFontSize(9); setColor(eligColor);
     const statusMsg = eligible
       ? ('\u2713 Above Nisab threshold of ' + fmt(nisabThresh) + ' — Zakat is obligatory')
       : ('\u2717 Below Nisab threshold of ' + fmt(nisabThresh) + ' — Zakat is not obligatory');
-    doc.text(statusMsg, MARGIN + 8, y + 4);
-    y += 28;
+    doc.text(statusMsg, MARGIN + 8, y + ROW_PAD);
+    y += ROW_H + 10;
 
     // ── Itemized Breakdown ──────────────────────────────────────
     if (categories.length > 0) {
@@ -2937,25 +2950,29 @@ Source: SeekersGuidance
       setDraw([200,190,160]); doc.setLineWidth(0.5); doc.line(MARGIN, y, W-MARGIN, y);
       y += 10;
       doc.setFontSize(8); setColor(GRAY);
-      doc.text('\u26a0 Per-category amounts are pre-liability and will not sum to final zakat due when liabilities exist.', MARGIN, y);
+      doc.text('\u26a0 Per-category amounts are pre-liability.', MARGIN, y);
+      y += 11;
+      doc.text('They will not sum to final zakat due when liabilities exist.', MARGIN, y);
       y += 14;
 
-      setFill([50,50,60]); doc.rect(MARGIN, y-10, COL, 16, 'F');
+      // Table header
+      setFill([50,50,60]); doc.rect(MARGIN, y, COL, ROW_H, 'F');
       doc.setFont('helvetica', 'bold'); doc.setFontSize(8); setColor(WHITE);
-      doc.text('Category', MARGIN+4, y);
-      doc.text('Zakatable Amount', COL2_X, y, { align:'right' });
-      doc.text('Zakat (2.5%)', COL3_X, y, { align:'right' });
+      doc.text('Category', C1_X, y + ROW_PAD);
+      doc.text('Zakatable Amount', C2_X, y + ROW_PAD, { align:'right' });
+      doc.text('Zakat (2.5%)', C3_X, y + ROW_PAD, { align:'right' });
       doc.setFont('helvetica', 'normal');
-      y += 14;
+      y += ROW_H;
 
       categories.forEach(function(c, i) {
-        checkPage(20);
-        if (i % 2 === 1) { setFill([248,244,234]); doc.rect(MARGIN, y-12, COL, 18, 'F'); }
+        checkPage(ROW_H + 4);
+        if (i % 2 === 1) { setFill([248,244,234]); doc.rect(MARGIN, y, COL, ROW_H, 'F'); }
+        const base = y + ROW_PAD;
         doc.setFontSize(9);
-        setColor(DARK); doc.text(c.label, MARGIN+4, y, { maxWidth: COL1_MAX - MARGIN - 4 });
-        setColor(GRAY); doc.text(fmt(c.val), COL2_X, y, { align:'right' });
-        setColor(DARK); doc.text(fmt(c.val * ZAKAT_RATE), COL3_X, y, { align:'right' });
-        y += 18;
+        setColor(DARK); doc.text(c.label, C1_X, base, { maxWidth: C1_MAX });
+        setColor(GRAY); doc.text(fmt(c.val), C2_X, base, { align:'right' });
+        setColor(DARK); doc.text(fmt(c.val * ZAKAT_RATE), C3_X, base, { align:'right' });
+        y += ROW_H;
       });
 
       if (weakLoan > 0) {
@@ -2969,8 +2986,10 @@ Source: SeekersGuidance
       }
     }
 
-    // ── Footer ──────────────────────────────────────────────────
-    y = 748;
+    // ── Footer ── always at bottom of last page ─────────────────
+    // Add extra space then footer — don't hardcode y=748 as content may run long
+    y += 20;
+    checkPage(40);
     setDraw(LGRAY); doc.setLineWidth(0.5); doc.line(MARGIN, y, W-MARGIN, y);
     y += 10;
     doc.setFontSize(7); setColor([160,160,160]);
