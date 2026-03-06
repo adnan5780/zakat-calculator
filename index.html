@@ -1479,6 +1479,77 @@ Source: SeekersGuidance
     This calculator is a guide. Consult a scholar for your specific situation.
   </p>
 
+  <!-- Affiliate / Pay Your Zakat section -->
+  <!-- Shown after results are calculated. Links to trusted zakat organizations. -->
+  <!-- NOTE: Replace href="#" with actual referral/affiliate URLs when partnerships are set up -->
+  <div id="affiliateSection" style="display:none; margin-bottom:16px;">
+    <div class="card" style="border-color:rgba(212,180,99,0.25);">
+      <div class="card-header" style="margin-bottom:14px;">
+        <span class="card-icon">🤲</span>
+        <span class="card-title">Ready to Pay Your Zakat?</span>
+      </div>
+      <div style="font-size:0.75rem; color:rgba(212,180,99,0.45); margin-bottom:16px; line-height:1.7;">
+        These are trusted organizations that distribute zakat to those in need.
+        Your contribution reaches verified recipients locally and globally.
+      </div>
+
+      <!-- Zakat Foundation -->
+      <a href="https://www.zakat.org" target="_blank" rel="noopener noreferrer" style="text-decoration:none;" onclick="if(typeof plausible!=='undefined')plausible('Click Zakat Foundation');">
+        <div style="
+          display:flex; align-items:center; justify-content:space-between;
+          padding:12px 14px; margin-bottom:10px;
+          background:rgba(212,180,99,0.05); border:1px solid rgba(212,180,99,0.18);
+          border-radius:12px; transition:all 0.2s; cursor:pointer;"
+          onmouseover="this.style.background='rgba(212,180,99,0.1)';this.style.borderColor='rgba(212,180,99,0.4)'"
+          onmouseout="this.style.background='rgba(212,180,99,0.05)';this.style.borderColor='rgba(212,180,99,0.18)'">
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif; font-size:1rem; color:#d4b463; font-weight:600;">Zakat Foundation of America</div>
+            <div style="font-size:0.7rem; color:rgba(212,180,99,0.4); margin-top:2px;">US-based · Local &amp; international distribution · Since 2001</div>
+          </div>
+          <span style="color:rgba(212,180,99,0.5); font-size:1rem;">→</span>
+        </div>
+      </a>
+
+      <!-- Islamic Relief -->
+      <a href="https://www.islamicreliefusa.org/give/zakat" target="_blank" rel="noopener noreferrer" style="text-decoration:none;" onclick="if(typeof plausible!=='undefined')plausible('Click Islamic Relief');">
+        <div style="
+          display:flex; align-items:center; justify-content:space-between;
+          padding:12px 14px; margin-bottom:10px;
+          background:rgba(212,180,99,0.05); border:1px solid rgba(212,180,99,0.18);
+          border-radius:12px; transition:all 0.2s; cursor:pointer;"
+          onmouseover="this.style.background='rgba(212,180,99,0.1)';this.style.borderColor='rgba(212,180,99,0.4)'"
+          onmouseout="this.style.background='rgba(212,180,99,0.05)';this.style.borderColor='rgba(212,180,99,0.18)'">
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif; font-size:1rem; color:#d4b463; font-weight:600;">Islamic Relief USA</div>
+            <div style="font-size:0.7rem; color:rgba(212,180,99,0.4); margin-top:2px;">Global humanitarian · Emergency relief &amp; development · Zakat-eligible programs</div>
+          </div>
+          <span style="color:rgba(212,180,99,0.5); font-size:1rem;">→</span>
+        </div>
+      </a>
+
+      <!-- LaunchGood -->
+      <a href="https://www.launchgood.com/zakat" target="_blank" rel="noopener noreferrer" style="text-decoration:none;" onclick="if(typeof plausible!=='undefined')plausible('Click LaunchGood');">
+        <div style="
+          display:flex; align-items:center; justify-content:space-between;
+          padding:12px 14px; margin-bottom:10px;
+          background:rgba(212,180,99,0.05); border:1px solid rgba(212,180,99,0.18);
+          border-radius:12px; transition:all 0.2s; cursor:pointer;"
+          onmouseover="this.style.background='rgba(212,180,99,0.1)';this.style.borderColor='rgba(212,180,99,0.4)'"
+          onmouseout="this.style.background='rgba(212,180,99,0.05)';this.style.borderColor='rgba(212,180,99,0.18)'">
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif; font-size:1rem; color:#d4b463; font-weight:600;">LaunchGood</div>
+            <div style="font-size:0.7rem; color:rgba(212,180,99,0.4); margin-top:2px;">Muslim crowdfunding platform · Vetted campaigns · Zakat &amp; Sadaqah</div>
+          </div>
+          <span style="color:rgba(212,180,99,0.5); font-size:1rem;">→</span>
+        </div>
+      </a>
+
+      <div style="font-size:0.68rem; color:rgba(240,230,200,0.2); margin-top:8px; text-align:center; line-height:1.6;">
+        We are not affiliated with these organizations. Links are provided as a community service.
+      </div>
+    </div>
+  </div>
+
   <!-- Sources -->
   <div style="max-width:620px; margin: 4px auto 32px; background:rgba(255,255,255,0.025); border:1px solid rgba(212,180,99,0.15); border-radius:14px; padding:16px 22px;">
     <div style="font-family:'Cormorant Garamond',serif; font-size:0.85rem; color:rgba(212,180,99,0.6); letter-spacing:0.08em; margin-bottom:10px;">SCHOLARLY SOURCES</div>
@@ -1508,6 +1579,13 @@ Source: SeekersGuidance
   </div>
 
 </div>
+
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://plausible.io/js/pa-rPJ6KSVVsT5lClSNBpDhd.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+</script>
 
 <script src="taxes.js"></script>
 <!-- jsPDF — generates the zakat report PDF entirely in the browser, no server needed -->
@@ -1707,6 +1785,10 @@ Source: SeekersGuidance
   }
 
   function showResults() {
+    // Track calculation event in Plausible
+    if (typeof plausible !== 'undefined') {
+      plausible('Calculate Zakat', { props: { nisab: nisabType } });
+    }
     calculate();
 
     const goldGrams = val('goldGrams');
@@ -1889,6 +1971,9 @@ Source: SeekersGuidance
 
     box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     showPDFButton(); // reveal the Download PDF button now that results are shown
+    // Show the pay your zakat affiliate section
+    const affEl = document.getElementById('affiliateSection');
+    if (affEl) affEl.style.display = 'block';
   }
 
   function set401kMethod(method) {
@@ -2893,6 +2978,10 @@ Source: SeekersGuidance
     y += 10;
     doc.text('Sources: SeekersGuidance and the Fiqh Council of North America · zakat-calculator.vercel.app', W/2, y, { align:'center' });
 
+    // Track PDF download event in Plausible
+    if (typeof plausible !== 'undefined') {
+      plausible('Download PDF Report');
+    }
     doc.save('Zakat_Report_' + new Date().getFullYear() + '.pdf');
   }
 
